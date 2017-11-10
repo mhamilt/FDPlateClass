@@ -15,9 +15,9 @@ FD_Plate::FD_Plate()
 	// Flags
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
-	bcFlag = 0;		// set boundary condition(s);
-	outFlag = 1;		// set output type 0: displacement, 1: velocity
-	setupFlag = false;	// flag if Setup() has been run
+	bcFlag_ = 0;		// set boundary condition(s);
+	outFlag_ = 1;		// set output type 0: displacement, 1: velocity
+	setupFlag_ = false;	// flag if Setup() has been run
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Physical Parameters
@@ -30,23 +30,23 @@ FD_Plate::FD_Plate()
 	// Wood  : 1e10   0.40	480
 	
 	// // wood
-	E = 11e9;						// Young's modulus
-	rho = 480;						// density (kg/m^3)
-	nu = .5;						// Poisson Ratios (< .5)
+	E_ = 11e9;						// Young's modulus
+	rho_ = 480;						// density (kg/m^3)
+	nu_ = .5;						// Poisson Ratios (< .5)
 	
-	H = .005;						// thickness (m)
-	Lx = 1;							// x-axis plate length (m)
-	Ly = 1;							// y-axis plate length (m)
-	loss[0] = 100; loss[1] = 2;
-	loss[2] = 1000; loss[3] = 1;    // loss [freq.(Hz), T60;...]
+	H_ = .005;						// thickness (m)
+	Lx_ = 1;							// x-axis plate length (m)
+	Ly_ = 1;							// y-axis plate length (m)
+	loss_[0] = 100; loss_[1] = 8;
+	loss_[2] = 1000; loss_[3] = 1;    // loss [freq.(Hz), T60;...]
 	
 	// I/O Parameters
-	rp [0] = .45; rp[1]=.65; rp[2] = .85; rp[3]= .15; // readout position as percentage.
+	rp_[0] = .45; rp_[1]=.65; rp_[2] = .85; rp_[3]= .15; // readout position as percentage.
 	
 	//Excitation
-	ctr[0] = .45; ctr[1] = .45;	// centre point of excitation as percentage
-	wid = .5;					// width (m)
-	u0 = 0; v0 = 1;				// excitation displacement and velocity
+	ctr_[0] = .45; ctr_[1] = .45;	// centre point of excitation as percentage
+	wid_ = .5;					// width (m)
+	u0_ = 0; v0_ = 1;				// excitation displacement and velocity
 	
 }
 
@@ -56,17 +56,18 @@ FD_Plate::~FD_Plate()
 	
 }
 
-// set the type of loss and update the lossFlag
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+
 void FD_Plate::setLoss(){
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Loss coefficients
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	z1 = 2*kappa*(2*pi*loss[0])/(2*pow(kappa,2));
-	z2 = 2*kappa*(2*pi*loss[2])/(2*pow(kappa,2));
+	z1_ = 2*kappa_*(2*pi*loss_[0])/(2*pow(kappa_,2));
+	z2_ = 2*kappa_*(2*pi*loss_[2])/(2*pow(kappa_,2));
 	
-	sigma0 = 6*log(10)*(-z2/loss[1] + z1/loss[3])/(z1-z2);
-	sigma1 = 6*log(10)*(1/loss[1] - 1/loss[3])/(z1-z2);
+	sigma0_ = 6*log(10)*(-z2_/loss_[1] + z1_/loss_[3])/(z1_-z2_);
+	sigma1_ = 6*log(10)*(1/loss_[1] - 1/loss_[3])/(z1_-z2_);
 	
 }
 
@@ -78,14 +79,14 @@ void FD_Plate::setGrid(){
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// stability condition
-	hmin = (sqrt(4*k*(sigma1+sqrt(pow(sigma1,2)+pow(kappa,2)))));
+	hmin_ = (sqrt(4*k_*(sigma1_+sqrt(pow(sigma1_,2)+pow(kappa_,2)))));
 	
-	Nx = floor(Lx/hmin);		// number of segments x-axis
-	Ny = floor(Ly/hmin);		// number of segments y-axis
-	h = sqrt(Lx*Ly/(Nx*Ny));;	// adjusted grid spacing x/y
-	Nx = Nx+1; Ny = Ny+1;		// grid point number x and y
-	mu = (kappa * k)/pow(h,2);	// scheme parameter
-	ss = Nx*Ny;					// total grid size.
+	Nx_ = floor(Lx_/hmin_);		// number of segments x-axis
+	Ny_ = floor(Ly_/hmin_);		// number of segments y-axis
+	h_ = sqrt(Lx_*Ly_/(Nx_*Ny_));;	// adjusted grid spacing x/y
+	Nx_ = Nx_+1; Ny_ = Ny_+1;		// grid point number x and y
+	mu_ = (kappa_ * k_)/pow(h_,2);	// scheme parameter
+	ss_ = Nx_*Ny_;					// total grid size.
 	
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
@@ -97,30 +98,30 @@ void FD_Plate::setCoefs(bool bcType = 0){
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	//update flag
-	bcFlag = bcType;
+	bcFlag_ = bcType;
 	
 	// coefficients are named based on position on the x and y axes.
-	A00 = 1/(1+k*sigma0); // Central Loss Coeeffient (INVERTED)
+	A00_ = 1/(1+k_*sigma0_); // Central Loss Coeeffient (INVERTED)
 	
 	//// Current time step (B) coeffients
 	// There are six unique coefficients for B coefs
-	B00 = (-pow(mu,2)*20 + (2*sigma1*k/pow(h,2))*-4 + 2) * A00;	// center
-	B01 = (-pow(mu,2)*-8 + (2*sigma1*k/pow(h,2))) * A00;		// 1-off
-	B11 = (-pow(mu,2)*2) * A00;									// diag
-	B02 = (-pow(mu,2)*1) * A00;									// 2-off
+	B00_ = (-pow(mu_,2)*20 + (2*sigma1_*k_/pow(h_,2))*-4 + 2) * A00_;	// center
+	B01_ = (-pow(mu_,2)*-8 + (2*sigma1_*k_/pow(h_,2))) * A00_;		// 1-off
+	B11_ = (-pow(mu_,2)*2) * A00_;									// diag
+	B02_ = (-pow(mu_,2)*1) * A00_;									// 2-off
 	
 	if(bcType){ // Clamped Boundary Coefficients
-		BC1 = (-pow(mu,2)*21 + (2*sigma1*k/pow(h,2))*-4 + 2) * A00; // Side
-		BC2 = (-pow(mu,2)*22 + (2*sigma1*k/pow(h,2))*-4 + 2) * A00; // Corner
+		BC1_ = (-pow(mu_,2)*21 + (2*sigma1_*k_/pow(h_,2))*-4 + 2) * A00_; // Side
+		BC2_ = (-pow(mu_,2)*22 + (2*sigma1_*k_/pow(h_,2))*-4 + 2) * A00_; // Corner
 	}
 	else { // Simply Supported Boundary Coefficients
-		BC1 = (-pow(mu,2)*19 + (2*sigma1*k/pow(h,2))*-4 + 2) * A00; // Side
-		BC2 = (-pow(mu,2)*18 + (2*sigma1*k/pow(h,2))*-4 + 2) * A00; // Corner
+		BC1_ = (-pow(mu_,2)*19 + (2*sigma1_*k_/pow(h_,2))*-4 + 2) * A00_; // Side
+		BC2_ = (-pow(mu_,2)*18 + (2*sigma1_*k_/pow(h_,2))*-4 + 2) * A00_; // Corner
 	}
 	
 	//// Previous time step (C) coeffients
-	C00 = (-(2*sigma1*k/pow(h,2))*-4 - (1-sigma0*k))  * A00;
-	C01 = -(2*sigma1*k/pow(h,2))  * A00;
+	C00_ = (-(2*sigma1_*k_/pow(h_,2))*-4 - (1-sigma0_*k_))  * A00_;
+	C01_ = -(2*sigma1_*k_/pow(h_,2))  * A00_;
 	
 }
 
@@ -134,28 +135,28 @@ void FD_Plate::Setup(double samprate = 44.1e3, bool bctype = 0){
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Motion Coefficients
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	D = (E*(pow(H, 3)))/(12*(1-pow(nu,2)));
-	kappa = sqrt(D / (rho*  H) );
+	D_ = (E_*(pow(H_, 3)))/(12*(1-pow(nu_,2)));
+	kappa_ = sqrt(D_ / (rho_*  H_) );
 	
-	SR = samprate;				// internal class sampling rate
-	k = 1/SR;					// time step
+	SR_ = samprate;				// internal class sampling rate
+	k_ = 1/SR_;					// time step
 	
 	setLoss();
 	setGrid();
 	setCoefs(bctype);
 	
 	//Set Input and Output Indeces
-	li = (Ny*( ( (ctr[1]*Nx)-1)) ) + (ctr[0]*Ny)-1;
-	lo = (Ny*( ( (rp[1]*Nx)-1)) ) +  (rp[0]*Ny)-1;
+	li_ = (Ny_*( ( (ctr_[1]*Nx_)-1)) ) + (ctr_[0]*Ny_)-1;
+	lo_ = (Ny_*( ( (rp_[1]*Nx_)-1)) ) +  (rp_[0]*Ny_)-1;
 	
 	//	Update flags
-	setupFlag = true;
-	bcFlag  = bctype;
+	setupFlag_ = true;
+	bcFlag_  = bctype;
 	
 	//	Clear State Memory
-	memset(uDATA, 0, ss * sizeof(double));
-	memset(u1DATA, 0, ss * sizeof(double));
-	memset(u2DATA, 0, ss * sizeof(double));
+	memset(uDATA_, 0, ss_ * sizeof(double));
+	memset(u1DATA_, 0, ss_ * sizeof(double));
+	memset(u2DATA_, 0, ss_ * sizeof(double));
 	
 	setForce();
 }
@@ -170,32 +171,31 @@ void FD_Plate::Setup(double samprate = 44.1e3, bool bctype = 0){
 void FD_Plate::printCoefs(){
 	
 	printf("--- Coefficient Info --- \n\n");
-	printf("Loss A		: %.4fm \n", A00);
-	printf("Centre B    : %.4fm \n", B00);
-	printf("1-Grid B    : %.4fm \n", B01);
-	printf("2-Grid B	: %.4fm \n", B02);
-	printf("Diagonal B  : %.4fm \n", B11);
-	printf("Centre C	: %.4fm \n", C00);
-	printf("1-Grid C    : %.4fm \n", C01);
-	printf("Side Bound	: %.4fm \n", BC1);
-	printf("Cornr Bound : %.4fm \n\n", BC2);
+	printf("Loss A		: %.4fm \n", A00_);
+	printf("Centre B    : %.4fm \n", B00_);
+	printf("1-Grid B    : %.4fm \n", B01_);
+	printf("2-Grid B	: %.4fm \n", B02_);
+	printf("Diagonal B  : %.4fm \n", B11_);
+	printf("Centre C	: %.4fm \n", C00_);
+	printf("1-Grid C    : %.4fm \n", C01_);
+	printf("Side Bound	: %.4fm \n", BC1_);
+	printf("Cornr Bound : %.4fm \n\n", BC2_);
 }
 
 void FD_Plate::printInfo(){
 	printf("--- Scheme Info --- \n\n");
-	printf("Size			: %.1f m2 \n", Nx*h*Ny*h);
-	printf("Thickness(mm)   : %.0f mm \n", H*1000);
-	printf("Grid X-Ax		: %d \n", Nx);
-	printf("Grid Y-Ax		: %d \n", Ny);
-	printf("Total Ps		: %d \n", ss);
-	printf("In_cell			: %d\n", li);
-	printf("Out_cell		: %d\n", lo);
-	printf("TimeStep		: %f\n", k);
-	printf("SampRate		: %.0f\n", SR);
-	printf("Youngs			: %.2e\n", E);
-	printf("Sigma 0			: %f\n", sigma0);
-	printf("Sigma 1			: %f\n", sigma1);
-	printf("LossType		: %d\n\n", lossFlag);
+	printf("Size			: %.1f m2 \n", Nx_*h_*Ny_*h_);
+	printf("Thickness(mm)   : %.0f mm \n", H_*1000);
+	printf("Grid X-Ax		: %d \n", Nx_);
+	printf("Grid Y-Ax		: %d \n", Ny_);
+	printf("Total Ps		: %d \n", ss_);
+	printf("In_cell			: %d\n", li_);
+	printf("Out_cell		: %d\n", lo_);
+	printf("TimeStep		: %f\n", k_);
+	printf("SampRate		: %.0f\n", SR_);
+	printf("Youngs			: %.2e\n", E_);
+	printf("Sigma 0			: %f\n", sigma0_);
+	printf("Sigma 1			: %f\n", sigma1_);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
@@ -210,108 +210,108 @@ void FD_Plate::printInfo(){
 
 void FD_Plate::UpdateScheme(){
 	
-	// Internal Gride Points
 	int xi, yi, cp;
-	
-	for(xi=Nx-4; xi--; ){
+
+	// Internal Gride Points
+	for(xi=Nx_-4; xi--; ){
 		
-		for(yi=Ny-4;yi--; ){
+		for(yi=Ny_-4;yi--; ){
 			
-			cp = (yi+2)+((xi+2) * Ny); // current point
+			cp = (yi+2)+((xi+2) * Ny_); // current point
 			
-			u[cp] = B00*u1[cp] +
-			B01*( u1[cp-1] + u1[cp+1] + u1[cp-Ny] + u1[cp+Ny] ) +
-			B02*( u1[cp-2] + u1[cp+2] +u1[cp-(2*Ny)] + u1[cp+(2*Ny)] ) +
-			B11*( u1[cp-1-Ny] + u1[cp+1-Ny] +u1[cp+1+Ny] + u1[cp-1+Ny] ) +
-			C00*u2[cp] +
-			C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
+			u_[cp] = B00_*u1_[cp] +
+			B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+			B02_*( u1_[cp-2] + u1_[cp+2] +u1_[cp-(2*Ny_)] + u1_[cp+(2*Ny_)] ) +
+			B11_*( u1_[cp-1-Ny_] + u1_[cp+1-Ny_] +u1_[cp+1+Ny_] + u1_[cp-1+Ny_] ) +
+			C00_*u2_[cp] +
+			C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 		}
 	}
 	
 	// Update Side Boundaries
 	//X-Axis
 	
-	for(xi=Nx-4; xi--; ){
+	for(xi=Nx_-4; xi--; ){
 		//North
-		cp = 1+((xi+2) * Ny); // current point
-		u[cp]  = BC1*u1[cp] +
-		B01*( u1[cp+1] + u1[cp-Ny] + u1[cp+Ny] ) +
-		B02*( u1[cp-2] + u1[cp+2] +u1[cp-(2*Ny)] + u1[cp+(2*Ny)] ) +
-		B11*( u1[cp+1-Ny] + u1[cp+1+Ny] ) +
-		C00*u2[cp] +
-		C01*( u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
+		cp = 1+((xi+2) * Ny_); // current point
+		u_[cp]  = BC1_*u1_[cp] +
+		B01_*( u1_[cp+1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+		B02_*( u1_[cp-2] + u1_[cp+2] + u1_[cp-(2*Ny_)] + u1_[cp+(2*Ny_)] ) +
+		B11_*( u1_[cp+1-Ny_] + u1_[cp+1+Ny_] ) +
+		C00_*u2_[cp] +
+		C01_*( u2_[cp+1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 		
 		//South
-		cp = Ny-2 +((xi+2) * Ny); // current point
-		u[cp]  = BC1*u1[cp] +
-		B01*( u1[cp-1] + u1[cp-Ny] + u1[cp+Ny] ) +
-		B02*( u1[cp-2] + u1[cp-(2*Ny)] + u1[cp+(2*Ny)] ) +
-		B11*( u1[cp-1-Ny] + u1[cp-1+Ny] ) +
-		C00*u2[cp] +
-		C01*( u2[cp-1] + u2[cp-Ny] + u2[cp+Ny] );
+		cp = Ny_-2 +((xi+2) * Ny_); // current point
+		u_[cp]  = BC1_*u1_[cp] +
+		B01_*( u1_[cp-1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+		B02_*( u1_[cp-2] + u1_[cp-(2*Ny_)] + u1_[cp+(2*Ny_)] ) +
+		B11_*( u1_[cp-1-Ny_] + u1_[cp-1+Ny_] ) +
+		C00_*u2_[cp] +
+		C01_*( u2_[cp-1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 		
 		
 	}
 	
 	// Y-Axis
 	
-	for(yi=Ny-4;yi--; ){
+	for(yi=Ny_-4;yi--; ){
 		//West
-		cp = yi+Ny+2; // current point
-		u[cp]  = BC1*u1[cp] +
-		B01*( u1[cp-1] + u1[cp+1] + u1[cp+Ny] ) +
-		B02*( u1[cp-2] + u1[cp+2] + u1[cp+(2*Ny)] ) +
-		B11*( u1[cp+1+Ny] + u1[cp-1+Ny] ) +
-		C00*u2[cp] +
-		C01*( u2[cp-1] + u2[cp+1] + u2[cp+Ny] );
+		cp = yi+Ny_+2; // current point
+		u_[cp]  = BC1_*u1_[cp] +
+		B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp+Ny_] ) +
+		B02_*( u1_[cp-2] + u1_[cp+2] + u1_[cp+(2*Ny_)] ) +
+		B11_*( u1_[cp+1+Ny_] + u1_[cp-1+Ny_] ) +
+		C00_*u2_[cp] +
+		C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp+Ny_] );
 		
 		//East
-		cp = (yi+2) + Ny*(Nx-2); // current point
-		u[cp]  = BC1*u1[cp] +
-		B01*( u1[cp-1] + u1[cp+1] + u1[cp-Ny] ) +
-		B02*( u1[cp-2] + u1[cp+2] +u1[cp-(2*Ny)] ) +
-		B11*( u1[cp-1-Ny] + u1[cp+1-Ny] ) +
-		C00*u2[cp] +
-		C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] );
+		cp = (yi+2) + Ny_*(Nx_-2); // current point
+		u_[cp]  = BC1_*u1_[cp] +
+		B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp-Ny_] ) +
+		B02_*( u1_[cp-2] + u1_[cp+2] +u1_[cp-(2*Ny_)] ) +
+		B11_*( u1_[cp-1-Ny_] + u1_[cp+1-Ny_] ) +
+		C00_*u2_[cp] +
+		C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp-Ny_] );
 		
 	}
 	
 	// Corner Boundaries
 	
-	cp = Ny+1;
-	u[cp] = BC2*u1[cp] +
-	B01*( u1[cp-1] + u1[cp+1] + u1[cp-Ny] + u1[cp+Ny] ) +
-	B02*( u1[cp+2] + u1[cp+(2*Ny)] ) +
-	B11*( u1[cp-1-Ny] + u1[cp+1-Ny] +u1[cp+1+Ny] + u1[cp-1+Ny] ) +
-	C00*u2[cp] +
-	C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
+	cp = Ny_+1;
+	u_[cp] = BC2_*u1_[cp] +
+	B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+	B02_*( u1_[cp+2] + u1_[cp+(2*Ny_)] ) +
+	B11_*( u1_[cp-1-Ny_] + u1_[cp+1-Ny_] +u1_[cp+1+Ny_] + u1_[cp-1+Ny_] ) +
+	C00_*u2_[cp] +
+	C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 	
-	cp = 2*(Ny-1);
-	u[cp] = BC2*u1[cp] +
-	B01*( u1[cp-1] + u1[cp+1] + u1[cp-Ny] + u1[cp+Ny] ) +
-	B02*( u1[cp-2] + u1[cp+(2*Ny)] ) +
-	B11*( u1[cp-1-Ny] + u1[cp+1-Ny] +u1[cp+1+Ny] + u1[cp-1+Ny] ) +
-	C00*u2[cp] +
-	C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
+	cp = 2*(Ny_-1);
+	u_[cp] = BC2_*u1_[cp] +
+	B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+	B02_*( u1_[cp-2] + u1_[cp+(2*Ny_)] ) +
+	B11_*( u1_[cp-1-Ny_] + u1_[cp+1-Ny_] +u1_[cp+1+Ny_] + u1_[cp-1+Ny_] ) +
+	C00_*u2_[cp] +
+	C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 	
-	cp = Ny*(Nx-2)+1;
-	u[cp] = BC2*u1[cp] +
-	B01*( u1[cp-1] + u1[cp+1] + u1[cp-Ny] + u1[cp+Ny] ) +
-	B02*( u1[cp+2] + u1[cp-(2*Ny)] ) +
-	B11*( u1[cp-1-Ny] + u1[cp+1-Ny] +u1[cp+1+Ny] + u1[cp-1+Ny] ) +
-	C00*u2[cp] +
-	C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
+	cp = Ny_*(Nx_-2)+1;
+	u_[cp] = BC2_*u1_[cp] +
+	B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+	B02_*( u1_[cp+2] + u1_[cp-(2*Ny_)] ) +
+	B11_*( u1_[cp-1-Ny_] + u1_[cp+1-Ny_] +u1_[cp+1+Ny_] + u1_[cp-1+Ny_] ) +
+	C00_*u2_[cp] +
+	C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 	
-	cp = Ny*(Nx-1) - 2;
-	u[cp] = BC2*u1[cp] +
-	B01*( u1[cp-1] + u1[cp+1] + u1[cp-Ny] + u1[cp+Ny] ) +
-	B02*( u1[cp-2] + u1[cp-(2*Ny)] ) +
-	B11*( u1[cp-1-Ny] + u1[cp+1-Ny] +u1[cp+1+Ny] + u1[cp-1+Ny] ) +
-	C00*u2[cp] +
-	C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
+	cp = Ny_*(Nx_-1) - 2;
+	u_[cp] = BC2_*u1_[cp] +
+	B01_*( u1_[cp-1] + u1_[cp+1] + u1_[cp-Ny_] + u1_[cp+Ny_] ) +
+	B02_*( u1_[cp-2] + u1_[cp-(2*Ny_)] ) +
+	B11_*( u1_[cp-1-Ny_] + u1_[cp+1-Ny_] +u1_[cp+1+Ny_] + u1_[cp-1+Ny_] ) +
+	C00_*u2_[cp] +
+	C01_*( u2_[cp-1] + u2_[cp+1] + u2_[cp-Ny_] + u2_[cp+Ny_] );
 	
 	// swap pointers
-	dummy_ptr = u2; u2 = u1; u1 = u; u = dummy_ptr;
+	dummy_ptr_ = u2_; u2_ = u1_; u1_ = u_; u_ = dummy_ptr_;
 	
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
@@ -324,10 +324,10 @@ void FD_Plate::UpdateScheme(){
 double FD_Plate::getOutput(bool outType){
 	
 	if(outType){
-		return (u1[lo]- u2[lo])*SR; // Velocity out
+		return (u1_[lo_]- u2_[lo_])*SR_; // Velocity out
 	}
 	else{
-		return u1[lo]; // Amplitude out
+		return u1_[lo_]; // Amplitude out
 	}
 }
 
@@ -338,15 +338,15 @@ double FD_Plate::getOutput(bool outType){
 void FD_Plate::setOutput(float xcoord, float ycoord){
 	
 	//TODO: CHECK IF ON A VALID GRID POINT
-	if((xcoord*Nx)-1 < 1 || (xcoord*Nx)-1 > Nx-2){
+	if((xcoord*Nx_)-1 < 1 || (xcoord*Nx_)-1 > Nx_-2){
 		//Do something to ensure it is not on a zero point
 	}
 	
-	if((ycoord*Ny)-1 < 1 || (ycoord*Ny)-1 > Nx-2){
+	if((ycoord*Ny_)-1 < 1 || (ycoord*Ny_)-1 > Nx_-2){
 		//Do something to ensure it is not on a zero point
 	}
 	
-	lo = (Ny*( ( (xcoord*Nx)-1)) ) +  (ycoord*Ny)-1;
+	lo_ = (Ny_*( ( (xcoord*Nx_)-1)) ) +  (ycoord*Ny_)-1;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
@@ -356,7 +356,7 @@ void FD_Plate::setOutput(float xcoord, float ycoord){
 // intergrated into the get output method.
 
 void FD_Plate::setOutType(bool outtype){ // set output to velocity amplitude
-	outFlag = outtype;
+	outFlag_ = outtype;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
@@ -369,25 +369,30 @@ void FD_Plate::setOutType(bool outtype){ // set output to velocity amplitude
 
 void FD_Plate::setForce(){
 	
+	
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Excitation Force
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	double dist, ind, rc, X, Y;
 	int xi, yi, cp;  //loop indeces
 	
 	// raised cosine in 2D
-	for(xi=1;xi<Nx-1;xi++){
+	for(xi=1;xi<Nx_-1;xi++){
 		
-		X = xi*h;
+		X = xi*h_;
 		
-		for(yi=1;yi<Ny-1;yi++){
-			cp = yi+(xi * Ny);
+		for(yi=1;yi<Ny_-1;yi++){
+			cp = yi+(xi * Ny_);
 			
-			Y = yi*h;
+			Y = yi*h_;
 			
-			dist = sqrt(pow(X-(ctr[0]*Lx),2) + pow(Y-(ctr[1]*Ly),2));
+			dist = sqrt(pow(X-(ctr_[0]*Lx_),2) + pow(Y-(ctr_[1]*Ly_),2));
 			
-			ind = sgn((wid*0.5)-dist);			// displacement (logical)
-			rc = .5*ind*(1+cos(2*pi*dist/wid)); // displacement
+			ind = sgn((wid_*0.5)-dist);			// displacement (logical)
+			rc = .5*ind*(1+cos(2*pi*dist/wid_)); // displacement
 			
-			u2[cp] = u0*rc;
-			u1[cp] = v0*k*rc;
+			u2_[cp] = u0_*rc;
+			u1_[cp] = v0_*k_*rc;
 			
 		}
 	}

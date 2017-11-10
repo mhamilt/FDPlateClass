@@ -74,51 +74,50 @@ private:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Flags
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	int lossFlag;		// record loss conditino type
-	bool bcFlag;		// set boundary condition(s);
-	bool outFlag;		// set output type 0: displacement, 1: velocity
-	bool setupFlag;		// flag if Setup() has been run
+	bool bcFlag_;		// set boundary condition(s);
+	bool outFlag_;		// set output type 0: displacement, 1: velocity
+	bool setupFlag_;		// flag if Setup() has been run
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Physical Parameters
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// // wood
-	double E;							// Young's modulus
-	double rho;							// density (kg/m^3)
+	double E_;							// Young's modulus
+	double rho_;							// density (kg/m^3)
 	
-	double H;							// thickness (m)
-	double Lx;							// x-axis plate length (m)
-	double Ly;							// y-axis plate length (m)
-	double loss[4];						// loss [freq.(Hz), T60;...]
-	double nu;							// Poisson Ratios (< .5)
+	double H_;							// thickness (m)
+	double Lx_;							// x-axis plate length (m)
+	double Ly_;							// y-axis plate length (m)
+	double loss_[4];						// loss [freq.(Hz), T60;...]
+	double nu_;							// Poisson Ratios (< .5)
 	
 	// I/O Parameters
-	double rp [4]; // readout position as percentage.
+	double rp_[4]; // readout position as percentage.
 	
 	//Excitation
-	double u0 , v0, wid, ctr[2];	// excitation displacement and velocity
+	double u0_ , v0_, wid_, ctr_[2];	// excitation displacement and velocity
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Derived Parameters
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
-	double D, kappa, hmin, h, mu, k, SR;
-	int Nx, Ny, ss, li, lo;
+	double D_, kappa_, hmin_, h_, mu_, k_, SR_;
+	int Nx_, Ny_, ss_, li_, lo_;
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Allocate Memory
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// Scheme States
-	double uDATA[max_grid_size], u1DATA[max_grid_size], u2DATA[max_grid_size];
-	double * u = uDATA, * u1 = u1DATA, * u2 = u2DATA;
-	double *dummy_ptr;
+	double uDATA_[max_grid_size], u1DATA_[max_grid_size], u2DATA_[max_grid_size];
+	double * u_ = uDATA_, * u1_ = u1DATA_, * u2_ = u2DATA_;
+	double *dummy_ptr_;
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Loss coefficients
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	double sigma0 ,sigma1, z1, z2;
+	double sigma0_ ,sigma1_, z1_, z2_;
 	
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,12 +125,9 @@ private:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// coefficients are named based on position on the x and y axes.
-	double A00, B00, B01, B11, B02, BC1, BC2, C00, C01;
+	double A00_, B00_, B01_, B11_, B02_, BC1_, BC2_, C00_, C01_;
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Excitation Force
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	double dist, ind, rc, X, Y;
+
 	
 	
 };
