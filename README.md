@@ -1,5 +1,8 @@
 # FD_Plate_Class
-A finite difference plate scheme wrapped in a class
+A finite difference plate scheme wrapped in a class  
+  
+All code tested with Xcode Version 8.2.1 (8C1002)  
+4.2.1 Compatible Apple LLVM 8.0.0 (clang-800.0.42.1)  
 
 Values inbetween the Edit Here banners can be changed. These are located in PlateClass.cpp  
 This will be changed through a struct at a later date. This is really just for testing.  
