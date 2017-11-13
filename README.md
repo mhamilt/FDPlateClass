@@ -12,7 +12,7 @@ If running executable from command line, the first arguement is the output file 
 alut.h library deprecated in macOS: but you can use freealut.  
 
 In Terminal  
->> brew install freealut  
+\>\> brew install freealut  
   
 Don't forget to add the AL folder in the header search path  
   
