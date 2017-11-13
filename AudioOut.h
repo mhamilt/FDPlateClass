@@ -11,14 +11,14 @@
 #include <math.h>
 
 #ifdef __APPLE__
-	#include "TargetConditionals.h"
-    #ifdef TARGET_OS_MAC
-		#include <OpenAL/al.h>	// macOS Only
-		#include <OpenAL/alc.h>	// macOS Only
-    #endif
+#include "TargetConditionals.h"
+#ifdef TARGET_OS_MAC
+#include <OpenAL/al.h>	// macOS Only
+#include <OpenAL/alc.h>	// macOS Only
+#endif
 #elif defined _WIN32 || defined _WIN64
-	#include <AL/al.h>
-	#include <AL/alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 #endif
 // alut.h library deprecated in macOS: but you can use freealut.
 //
@@ -37,21 +37,28 @@
 // WAV header format: http://soundfile.sapp.org/doc/WaveFormat/
 
 typedef struct waveFormatHeader {
-	char     ChunkId[4];
-	uint32_t ChunkSize;
-	char     Format[4];
-	char     Subchunk1ID[4];
-	uint32_t Subchunk1Size;
-	uint16_t AudioFormat;
-	uint16_t NumChannels;
-	uint32_t SampleRate;
-	uint32_t ByteRate;
-	uint16_t BlockAlign;
-	uint16_t BitsPerSample;
-	char     SubChunk2ID[4];
-	uint32_t Subchunk2Size;
+	char     chunkid[4];
+	uint32_t chunksize;
+	char     format[4];
+	char     subchunk1id[4];
+	uint32_t subchunk1size;
+	uint16_t audioformat;
+	uint16_t numchannels;
+	uint32_t samplerate;
+	uint32_t byterate;
+	uint16_t blockalign;
+	uint16_t bitspersample;
+	char     subchunk2id[4];
+	uint32_t subchunk2size;
 } waveFormatHeader_t;
 
+typedef struct midiHeader{
+	char		mthd[4];	//4bytes
+	uint32_t	length;		//4bytes Big endian
+	uint16_t	format;		//2bytes
+	uint16_t	ntrks;		//2bytes
+	uint16_t	division;	//2bytes
+} midiHeader_t;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
 
@@ -59,10 +66,10 @@ typedef struct waveFormatHeader {
 
 waveFormatHeader_t * basicHeader(){
 	waveFormatHeader_t * wh = (waveFormatHeader_t *)malloc(sizeof(waveFormatHeader_t));
-	memcpy(wh->ChunkId, &"RIFF", 4);
-	memcpy(wh->Format, &"WAVE", 4);
-	memcpy(wh->Subchunk1ID, &"fmt ", 4); //notice the space at the end!
-	wh -> Subchunk1Size = 16;
+	memcpy(wh->chunkid, &"RIFF", 4);
+	memcpy(wh->format, &"WAVE", 4);
+	memcpy(wh->subchunk1id, &"fmt ", 4); //notice the space at the end!
+	wh -> subchunk1size = 16;
 	return wh;
 }
 
@@ -74,13 +81,13 @@ waveFormatHeader_t * basicHeader(){
 
 waveFormatHeader_t * stereo16bitWaveHeader(double SampRate){
 	waveFormatHeader_t * wh = basicHeader();
-	wh->AudioFormat = 1;
-	wh->NumChannels = 2;
-	wh -> SampleRate = (uint32_t)SampRate;
-	wh -> BitsPerSample = 16;
-	wh -> ByteRate = wh->NumChannels * wh -> SampleRate * wh -> BitsPerSample/8;
-	wh -> BlockAlign = wh->NumChannels * wh -> BitsPerSample/8;
-	memcpy(wh->SubChunk2ID, &"data", 4);
+	wh->audioformat = 1;
+	wh->numchannels = 2;
+	wh -> samplerate = (uint32_t)SampRate;
+	wh -> bitspersample = 16;
+	wh -> byterate = wh->numchannels * wh -> samplerate * wh -> bitspersample/8;
+	wh -> blockalign = wh->numchannels * wh -> bitspersample/8;
+	memcpy(wh->subchunk2id, &"data", 4);
 	return wh;
 }
 
@@ -92,13 +99,13 @@ waveFormatHeader_t * stereo16bitWaveHeader(double SampRate){
 
 waveFormatHeader_t * mono16bitWaveHeader(double SampRate){
 	waveFormatHeader_t * wh = basicHeader();
-	wh->AudioFormat = 1;
-	wh->NumChannels = 1;
-	wh -> SampleRate = (uint32_t)SampRate;
-	wh -> BitsPerSample = 16;
-	wh -> ByteRate = wh->NumChannels * wh -> SampleRate * wh -> BitsPerSample/8;
-	wh -> BlockAlign = wh->NumChannels * wh -> BitsPerSample/8;
-	memcpy(wh->SubChunk2ID, &"data", 4);
+	wh->audioformat = 1;
+	wh->numchannels = 1;
+	wh -> samplerate = (uint32_t)SampRate;
+	wh -> bitspersample = 16;
+	wh -> byterate = wh->numchannels * wh -> samplerate * wh -> bitspersample/8;
+	wh -> blockalign = wh->numchannels * wh -> bitspersample/8;
+	memcpy(wh->subchunk2id, &"data", 4);
 	return wh;
 }
 
@@ -109,8 +116,8 @@ waveFormatHeader_t * mono16bitWaveHeader(double SampRate){
 // array.
 
 void setLengthForWaveFormatHeader(waveFormatHeader_t * wh, size_t numberOfFrames){
-	wh -> Subchunk2Size = (uint32_t)numberOfFrames * wh->NumChannels * wh->BitsPerSample/8;
-	wh -> ChunkSize = 36 + wh -> Subchunk2Size;
+	wh -> subchunk2size = (uint32_t)numberOfFrames * wh->numchannels * wh->bitspersample/8;
+	wh -> chunksize = 36 + wh -> subchunk2size;
 }
 
 
@@ -212,7 +219,186 @@ static void writeWavMS(double *audio,const char outputFile[], int NumberOfSample
 	printf("%d samples written to %s\n", NumberOfSamples,outputFile);
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~READING .WAV~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+
+// Will read first channel only on multichannel files
+double *readWav(const char *filename, int *sampsperchan, int *sampleRate)
+{
+	FILE *f;
+	waveFormatHeader hdr;
+	double *data;
+	short *buf;
+	int i, length;
+	
+	f = fopen(filename, "rb");
+	if (!f) {
+		return NULL;
+	}
+	fread(&hdr, 1, sizeof(hdr), f);
+	/* quick sanity check */
+	
+	if ((strncmp(&hdr.chunkid[0], "RIFF", 4)) || (strncmp(&hdr.format[0], "WAVE", 4)) ||
+		(strncmp(&hdr.subchunk1id[0], "fmt ", 4)) || (strncmp(&hdr.subchunk2id[0], "data", 4))) {
+		fclose(f);
+		return NULL;
+	}
+	
+	/* check correct format */
+	
+	if ((hdr.bitspersample != 16)) {
+		fclose(f);
+		printf("FILE NOT 16-BIT\n");
+		return NULL;
+	}
+	
+	*sampleRate = hdr.samplerate;
+	length = hdr.subchunk2size / 2;
+	*sampsperchan = hdr.subchunk2size*8/(hdr.numchannels*hdr.bitspersample);
+	
+	buf = (short *)malloc((length)*sizeof(short));
+	if (!buf) {
+		fclose(f);
+		return NULL;
+	}
+	fread(buf, (length)*sizeof(short), 1, f);
+	fclose(f);
+	
+	data = (double *)malloc((length)*sizeof(double));
+	if (!data) {
+		free(buf);
+		return NULL;
+	}
+	
+	// Dividing by this will scale a .wav to between -1 and 1
+	double wavbitscale = pow(2,hdr.bitspersample)/2;
+	
+	int i2=0;
+	for (i = 0; i < (*sampsperchan); i++) {
+		for (int j = 0; j < hdr.numchannels; j++){
+			if (j==0){
+				data[i] = ((double)buf[i2]) / wavbitscale;
+			}
+			i2++;
+		}
+	}
+	
+	printf("%d samples read from %s\n",length,filename);
+	
+	free(buf);
+	return data;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+
+double **readStereoWav(const char *filename, int *length, int *sampleRate)
+
+{
+	FILE *f;
+	waveFormatHeader hdr;
+	//	double **data;
+	short *buf;
+	int i, sampsperchan;
+	
+	
+	f = fopen(filename, "rb");
+	if (!f) {
+		return NULL;
+	}
+	fread(&hdr, 1, sizeof(hdr), f);
+	/* quick sanity check */
+	
+	if ((strncmp(&hdr.chunkid[0], "RIFF", 4)) || (strncmp(&hdr.format[0], "WAVE", 4)) ||
+		(strncmp(&hdr.subchunk1id[0], "fmt ", 4)) || (strncmp(&hdr.subchunk2id[0], "data", 4))) {
+		fclose(f);
+		return NULL;
+	}
+	
+	
+	/* check correct format */
+	
+	if ((hdr.bitspersample != 16)) {
+		fclose(f);
+		return NULL;
+	}
+	
+	*sampleRate = hdr.samplerate;
+	*length = hdr.subchunk2size*.5;
+	sampsperchan = hdr.subchunk2size*8/(hdr.numchannels*hdr.bitspersample);
+	
+	buf = (short *)malloc((*length)*sizeof(short));
+	if (!buf) {
+		fclose(f);
+		return NULL;
+	}
+	
+	fread(buf, (*length)*sizeof(short), 1, f);
+	fclose(f);
+	
+	
+	
+	double** data = new double*[hdr.numchannels];
+	
+	if (!data) {
+		free(buf);
+		return NULL;
+	}
+	
+	for(int i = 0; i < hdr.numchannels; ++i)
+	{
+		data[i] = (double *)malloc(sampsperchan * sizeof(double));
+		
+	}
+	
+	int i2=0;
+	for (i = 0; i < (sampsperchan); i++) {
+		for (int j = 0; j < hdr.numchannels; j++){
+			data[j][i] = ((double)buf[i2]) / 32768.0;
+			i2++;
+		}
+	}
+	
+	
+	printf("%d samples read from %s\n",*length,filename);
+	
+	free(buf);
+	return data;
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+
+void printWavHeader(const char *filename)
+{
+	FILE *f;
+	waveFormatHeader hdr;
+	
+	f = fopen(filename, "rb");
+	if (!f) {
+		printf("NO FILE FOUND\n");
+	}
+	fread(&hdr, 1, sizeof(hdr), f);
+	/* quick sanity check */
+	printf("--- .WAV HEADER --- \n\n");
+	printf("Chunk ID		: %s\n", hdr.chunkid);
+	printf("Chunk Size		: %u\n", hdr.chunksize);
+	printf("Format			: %s\n", hdr.format);
+	printf("Sub-Chunk 1		: %s\n", hdr.subchunk1id);
+	printf("Sub-Chunk 1 size: %d\n", hdr.subchunk1size);
+	printf("Audio Format	: %d\n", hdr.audioformat);
+	printf("Num Channels	: %d\n", hdr.numchannels);
+	printf("Sample Rate		: %u\n", hdr.samplerate);
+	printf("Byte Rate		: %u\n", hdr.byterate);
+	printf("Block Align		: %u\n", hdr.blockalign);
+	printf("Bits Per Samp	: %u\n", hdr.bitspersample);
+	printf("Sub-Chunk 2		: %s\n", hdr.subchunk2id);
+	printf("Sub-Chunk 2 size: %u\n", hdr.subchunk2size);
+	printf("SampsPerChan	: %u\n", hdr.subchunk2size*8/(hdr.numchannels*hdr.bitspersample));
+	// Subchunk2Size    == NumSamples * NumChannels * BitsPerSample/8
+	// BitsPerSample    == 8 bits = 8, 16 bits = 16, etc.
+	// Subchunk2Size*8/(NumChannels*BitsPerSample) = NumSamples
+	fclose(f);
+}
 
 
 
@@ -279,34 +465,34 @@ void playWavMS(char *inputfname){
 	ALuint buffer, source;
 	ALCenum error;
 	ALint source_state;
-
+	
 	fprintf(stdout, "Using " BACKEND " as audio backend\n\n");
-
+	
 	enumeration = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
 	if (enumeration == AL_FALSE)
 		fprintf(stderr, "enumeration extension not available\n");
-
+	
 	list_audio_devices(alcGetString(NULL, ALC_DEVICE_SPECIFIER));
-
+	
 	if (!defaultDeviceName)
 		defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-
+	
 	device = alcOpenDevice(defaultDeviceName);
 	if (!device) {
 		
 		TEST_ERROR("unable to open default device\n");
 	}
-
+	
 	fprintf(stdout, "Device: %s\n", alcGetString(device, ALC_DEVICE_SPECIFIER));
-
+	
 	alGetError();
-
+	
 	context = alcCreateContext(device, NULL);
 	if (!alcMakeContextCurrent(context)) {
 		fprintf(stderr, "failed to make default context\n");
-
+		
 	}
-
+	
 	TEST_ERROR("make default context");
 	
 	alGenSources((ALuint)1, &source);
@@ -353,5 +539,53 @@ void playWavMS(char *inputfname){
 void weirdPrint(const char input[]){
 	printf("%s\n", input);
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+
+
+void printMidiHeader(const char *filename)
+{
+	FILE *f;
+	midiHeader hdr;
+	
+	f = fopen(filename, "rb");
+	if (!f) {
+		printf("NO FILE FOUND\n");
+	}
+	fread(&hdr, 1, sizeof(hdr), f);
+	/* quick sanity check */
+	printf("--- .MIDI HEADER --- \n\n");
+	printf("Header MThd		: %s\n", hdr.mthd);
+	printf("Header Length	: %#x\n", hdr.length);
+	printf("Format			: %#x\n", hdr.format);
+	printf("Track Chunks	: %#x\n", hdr.ntrks);
+	printf("Division		: %#x\n", hdr.division);
+	
+	fclose(f);
+}
+
+/*
+ <Header Chunk>
+ "MThd" 4 bytes
+ the literal string MThd, or in hexadecimal notation: 0x4d546864. These four
+ characters at the start of the MIDI file indicate that this is a MIDI file.
+ 
+ <header_length> 4 bytes
+ length of the header chunk (always 6 bytes long--the size of the next three
+ fields which are considered the header chunk).
+ 
+ <format> 2 bytes
+ 0 = single track file format
+ 1 = multiple track file format
+ 2 = multiple song file format (i.e., a series of type 0 files)
+ 
+ <n> 2 bytes
+ number of track chunks that follow the header chunk
+ 
+ <division> 2 bytes
+ unit of time for delta timing. If the value is positive, then it represents the
+ units per beat. For example, +96 would mean 96 ticks per beat. If the value is
+ negative, delta times are in SMPTE compatible units.
+ */
 
 #endif /* AudioOut_hpp */
