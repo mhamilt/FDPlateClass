@@ -15,27 +15,27 @@ FDPlate::FDPlate()
     // Flags
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    currentBoundCon = BoundaryCondition::simplySupported;		// set boundary condition (s);
-    outputType = OutputMethod::velocity;		// set output type 0: displacement, 1: velocity
-    setupFlag = false;	// flag if Setup() has been run
+    currentBoundCon = BoundaryCondition::simplySupported;   // set boundary condition (s);
+    outputType = OutputMethod::velocity;        // set output type 0: displacement, 1: velocity
+    setupFlag = false;    // flag if Setup() has been run
     
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Physical Parameters
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    //         E	  nu	Rho
-    // Steel : 2e11   0.30	8050
-    // Alum  : 7e10   0.35	2700
-    // Lead  : 1.6e10 0.44	11340
-    // Wood  : 1e10   0.40	480
+    //         E      nu    Rho
+    // Steel : 2e11   0.30    8050
+    // Alum  : 7e10   0.35    2700
+    // Lead  : 1.6e10 0.44    11340
+    // Wood  : 1e10   0.40    480
     
     // // wood
-    E = 11e9;						// Young's modulus
-    rho = 480;						// density (kg/m^3)
-    nu = .5;						// Poisson Ratios (< .5)
-    H = .006;						// thickness (m)
-    Lx = 1;							// x-axis plate length (m)
-    Ly = 1;							// y-axis plate length (m)
+    E = 11e9;                        // Young's modulus
+    rho = 480;                       // density (kg/m^3)
+    nu = .5;                         // Poisson Ratios (< .5)
+    H = .006;                        // thickness (m)
+    Lx = 1;                          // x-axis plate length (m)
+    Ly = 1;                          // y-axis plate length (m)
     loss[0] = 100; loss[1] = 1;
     loss[2] = 1000; loss[3] = .2;    // loss [freq.(Hz), T60;...]
     
@@ -43,14 +43,14 @@ FDPlate::FDPlate()
     rp[0] = .45; rp[1]=.65; rp[2] = .45; rp[3]= .15; // readout position as percentage.
     
     //Excitation
-    ctr[0] = .35; ctr[1] = .45;	// centre point of excitation as percentage
-    wid = .25;					// width (m)
-    u0 = 0; v0 = 1;				// excitation displacement and velocity
+    ctr[0] = .35; ctr[1] = .45;    // centre point of excitation as percentage
+    wid = .25;                    // width (m)
+    u0 = 0; v0 = 1;                // excitation displacement and velocity
     
 };
 
 
-void FDPlate::setup (double samprate, BoundaryCondition bcType)
+void FDPlate::setup (double sampRate, BoundaryCondition bcType)
 {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Motion Coefficients
@@ -58,8 +58,8 @@ void FDPlate::setup (double samprate, BoundaryCondition bcType)
     D = (E*(pow (H, 3)))/(12*(1-pow (nu,2)));
     kappa = sqrt (D / (rho*  H) );
     
-    SR = samprate;				// internal class sampling rate
-    k = 1/SR;					// time step
+    SR = sampRate;                // internal class sampling rate
+    k = 1/SR;                    // time step
     
     setLoss (8,.75);
     setGrid();
@@ -69,7 +69,7 @@ void FDPlate::setup (double samprate, BoundaryCondition bcType)
     li = (Ny*(ctr[1]*Nx)) + (ctr[0]*Ny);
     lo = (Ny*(rp[1]*Nx)) +  (rp[0]*Ny);
     
-    //	Update flags
+    //    Update flags
     setupFlag = true;
     currentBoundCon  = bcType;
     
@@ -118,15 +118,15 @@ void FDPlate::setGrid()
     }
     else
     {
-        hmin =	Lx/maxXgrid;
+        hmin =    Lx/maxXgrid;
     }
-    Nx = floor (Lx/hmin);		// number of segments x-axis
-    Ny = floor (Ly/hmin);		// number of segments y-axis
+    Nx = floor (Lx/hmin);        // number of segments x-axis
+    Ny = floor (Ly/hmin);        // number of segments y-axis
     
-    h = sqrt (Lx*Ly/(Nx*Ny));;	// adjusted grid spacing x/y
-    Nx = Nx+1; Ny = Ny+1;		// grid point number x and y
-    mu = (kappa * k)/pow (h,2);	// scheme parameter
-    ss = Nx*Ny;					// total grid size.
+    h = sqrt (Lx*Ly/(Nx*Ny));;    // adjusted grid spacing x/y
+    Nx = Nx+1; Ny = Ny+1;        // grid point number x and y
+    mu = (kappa * k)/pow (h,2);    // scheme parameter
+    ss = Nx*Ny;                    // total grid size.
     
 }
 //==============================================================================
@@ -146,9 +146,9 @@ void FDPlate::setCoefs (BoundaryCondition bcType)
     //// Current time step (B) coeffients
     // There are six unique coefficients for B coefs
     B00 = (-pow (mu,2)*20 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // center
-    B01 = (-pow (mu,2)*-8 + (2*sigma1*k/pow (h,2))) * A00;		  // 1-off
-    B11 = (-pow (mu,2)*2) * A00;									  // diag
-    B02 = (-pow (mu,2)*1) * A00;									  // 2-off
+    B01 = (-pow (mu,2)*-8 + (2*sigma1*k/pow (h,2))) * A00;          // 1-off
+    B11 = (-pow (mu,2)*2) * A00;                                      // diag
+    B02 = (-pow (mu,2)*1) * A00;                                      // 2-off
     
     switch (bcType)
     {
@@ -460,7 +460,7 @@ void FDPlate::setInitialCondition()
             const int cp = yi+(xi * Ny);
             const double Y = yi*h;
             const double dist = sqrt (pow (X-(ctr[0]*Lx),2) + pow (Y-(ctr[1]*Ly),2));
-            const double ind = sgn((wid*0.5)-dist);			// displacement (logical)
+            const double ind = sgn((wid*0.5)-dist);            // displacement (logical)
             const double rc = .5*ind*(1+cos (2*pi*dist/wid)); // displacement
             u2[cp] = u0*rc;
             u1[cp] = v0*k*rc;
@@ -494,7 +494,7 @@ double FDPlate::reverb (double force)
 {
     updateScheme();
     addForce (force);
-    //	return getOutput (true);
+    //    return getOutput (true);
     return getInterpOut();
 }
 
@@ -512,7 +512,7 @@ double FDPlate::getInterpOut()
             // out of bound test to mark point as zero
             if (yInterpIndeces[yi] < 0 || yInterpIndeces[yi] > Ny || xInterpIndeces[xi] < 0 || xInterpIndeces[xi] > Nx)
             {
-                //				hiResValue += 0;
+                //                hiResValue += 0;
             }
             else
             {
@@ -527,28 +527,28 @@ double FDPlate::getInterpOut()
 
 
 //======================================================================
-//	LINEAR INTERP (COMMENT OUT)
+//    LINEAR INTERP (COMMENT OUT)
 //======================================================================
 
 //double FDPlate::getInterpOut()
 //{
 //
-//		const int cp = interpZeroIndex;
+//        const int cp = interpZeroIndex;
 //
-//		const double interpOut = (((1-interpAlphaX)* (1-interpAlphaY) * u1[cp])	    +
-//						   ((1-interpAlphaX)* (interpAlphaY)   * u1[cp+1])	+
-//						   ((interpAlphaX)  * (1-interpAlphaY) * u1[cp+Ny]) +
-//						   ((interpAlphaX)  * (interpAlphaY)   * u1[cp+1+Ny])
+//        const double interpOut = (((1-interpAlphaX)* (1-interpAlphaY) * u1[cp])        +
+//                           ((1-interpAlphaX)* (interpAlphaY)   * u1[cp+1])    +
+//                           ((interpAlphaX)  * (1-interpAlphaY) * u1[cp+Ny]) +
+//                           ((interpAlphaX)  * (interpAlphaY)   * u1[cp+1+Ny])
 //
-//						   -(((1-interpAlphaX)* (1-interpAlphaY) * u2[cp])	+
-//						   ((1-interpAlphaX)* (interpAlphaY)   * u2[cp+1])	+
-//						   ((interpAlphaX)  * (1-interpAlphaY) * u2[cp+Ny]) +
-//						   ((interpAlphaX)  * (interpAlphaY)   * u2[cp+1+Ny])))*SR;
+//                           -(((1-interpAlphaX)* (1-interpAlphaY) * u2[cp])    +
+//                           ((1-interpAlphaX)* (interpAlphaY)   * u2[cp+1])    +
+//                           ((interpAlphaX)  * (1-interpAlphaY) * u2[cp+Ny]) +
+//                           ((interpAlphaX)  * (interpAlphaY)   * u2[cp+1+Ny])))*SR;
 //
-//	return interpOut;
+//    return interpOut;
 //}
 //======================================================================
-//	LINEAR INTERP (COMMENT OUT)
+//    LINEAR INTERP (COMMENT OUT)
 //======================================================================
 
 
@@ -558,7 +558,7 @@ double FDPlate::getInterpOut()
 
 void FDPlate::setInterpOut (const double xCoord, const double yCoord)
 {
-    //	lo = (Ny*(xCoord*Nx)) +  (yCoord*Ny);
+    //    lo = (Ny*(xCoord*Nx)) +  (yCoord*Ny);
     
     const int order = interpOrder;
     for (int i = 0; i < order;++i)
@@ -570,7 +570,7 @@ void FDPlate::setInterpOut (const double xCoord, const double yCoord)
     interpPointY = (yCoord*(Ny-1));
     interpPointX = (xCoord*Nx);
     
-    //		const int order = interpOrder;
+    //        const int order = interpOrder;
     const int res = interpRes;
     xAlphaIndex = floor((interpPointX-floor (interpPointX))*res);
     yAlphaIndex = floor((interpPointY-floor (interpPointY))*res);
@@ -578,24 +578,24 @@ void FDPlate::setInterpOut (const double xCoord, const double yCoord)
 
 
 //======================================================================
-//	LINEAR INTERP (COMMENT OUT)
+//    LINEAR INTERP (COMMENT OUT)
 //======================================================================
 //void FDPlate::setInterpOut (const double xCoord, const double yCoord)
 //{
-//	interpAlphaY = (yCoord*(Ny)) - floor (yCoord*(Ny));
-//	interpAlphaX = (xCoord*(Nx)) - floor (xCoord*(Nx));
-//	interpZeroIndex = int( floor (yCoord*(Ny-1)) + floor (xCoord*(Nx))* (Ny) );
+//    interpAlphaY = (yCoord*(Ny)) - floor (yCoord*(Ny));
+//    interpAlphaX = (xCoord*(Nx)) - floor (xCoord*(Nx));
+//    interpZeroIndex = int( floor (yCoord*(Ny-1)) + floor (xCoord*(Nx))* (Ny) );
 //
-//	if (interpZeroIndex > ((Nx*Ny)-1-Ny))
-//	{
-//		interpZeroIndex = int( floor (yCoord*(Ny-2)) + (Nx-2)* (Ny) );
-//		interpAlphaY = 0;
-//		interpAlphaX = 0;
-//	}
-////	printf("Zero Index: %d\n",interpZeroIndex);
+//    if (interpZeroIndex > ((Nx*Ny)-1-Ny))
+//    {
+//        interpZeroIndex = int( floor (yCoord*(Ny-2)) + (Nx-2)* (Ny) );
+//        interpAlphaY = 0;
+//        interpAlphaX = 0;
+//    }
+////    printf("Zero Index: %d\n",interpZeroIndex);
 //}
 //======================================================================
-//	LINEAR INTERP (COMMENT OUT)
+//    LINEAR INTERP (COMMENT OUT)
 //======================================================================
 
 //==============================================================================
