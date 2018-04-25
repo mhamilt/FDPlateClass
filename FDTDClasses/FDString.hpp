@@ -14,149 +14,160 @@
 
 class FDString
 {
-	
+public: // Enum Classes
+    enum class BoundaryCondition
+    {
+        simplySupported,
+        clamped
+    };
+    
+    enum class OutputMethod
+    {
+        amplitude,
+        velocity
+    };
+    
+    enum class InputMethod
+    {
+        pluck,
+        strike
+    };
+    enum class LossModel
+    {
+        lossless,
+        simple,
+        frequencyDepenent
+    };
 public:
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Constructors/Assignments
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	//Still Not sure About the Correct Syntax for these
-	
+	//==========================================================================
 	//Contructor
 	FDString();
-	
+	//==========================================================================
 	//Destructor
 	~FDString(); //{delete EVERYTHING;}
-	
+	//==========================================================================
 	// Copy Assignment
 	//	FDString& operator= (const FDString&);
-	
+	//==========================================================================
 	// Move-Constructor
 	//	FDString (FDString&&);
-	
+	//==========================================================================
 	// Move-Assignment
 	//	FDString& operator= (FDString&&);
-	
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	void Setup(double, int, bool);	//Semi-Finished
-	void setLoss(int);				//DONE
-	void setGrid();
-	void setCoefs(bool);			//DONE
-	void UpdateScheme();			//DONE
-	void ProcessIO();
-	void printInfo();				//DONE
-	void printCoefs();				//DONE
-	void setInput(float);			//DONE
-	void setOutput(float);			//DONE
-	double getOutput(bool);			//DONE
-	void setOutType(bool);			//DONE
-	void setForce();				//Under Construction
-	
-private: // functions
-    
+	//==========================================================================
+	void setup(double, LossModel, BoundaryCondition);
+    //==========================================================================
+    void printInfo();
+    void printCoefs();
+    //==========================================================================
+    void addForce();
+    //==========================================================================
     /**
-     Signum Function
+     Set the position of force input
 
-     @param d input
-     @return returns 0 if d is `<` 0 or 1 if d is `>` 0
+     @param dist a normalised distance between 0 and 1 along the string
      */
-    int sgn(double d)
-    {
-        if(d<=0)
-            return 0;
-        else
-            return 1;
-    }
+    void setInputPosition (float dist);
+    /**
+     Set the position of reading the output
 
+     @param dist a normalised distance between 0 and 1 along the string
+     */
+    void setOutputPosition (float dist);
+    /**
+     set the method of reading output
+
+     @param outType The method of readin output (enum)
+     */
+    void setOutType (OutputMethod outType);
+    //==========================================================================
+    /**
+     calculate the next time step state
+     */
+    void updateScheme();
+    //==========================================================================
+    /**
+     read a sample value from the string grid
+
+     @return returns the output of the string
+     */
+    double getOutput();
+private: // functions
+    //==========================================================================
+    void setLoss (LossModel lossType);
+    //==========================================================================
+    void setGrid();
+    void setMemory();
+    //==========================================================================
+    void setCoefs (BoundaryCondition bctype);
+    //==========================================================================
+    void processIO();
+    //==========================================================================
+    void setInitialCondition();
+    //==========================================================================
+    /**
+     adds force to the `u` time state and updates the force vector and force index `fi`
+     */
+    void updateForce();
+    //==========================================================================
   private:
-    const double pi {3.14159265358979323846};
-    static const int maxGridSize {1500};		// real-time limit 3000 points approx.
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Flags
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	// Conditions
-	bool bcFlag;		// boundary condition type: 0: simply supported, 1: clamped
-	bool outtype;		// output type: 0: displacement, 1: velocity
-	short losstype;		// loss type: 1: independant, 2: dependant
-	short itype;		// type of input: 1: struck, 2: plucked
-	bool setupFlag;		// Confirm the scheme has been initialised.
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Parameters
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	// simulation
-	
-	double SR;
-	// physical parameters
-	
-	//////// String
-	//         E	  nu	Rho
-	// Steel : 2e11   0.30	8050
-	// Alum  : 7e10   0.35	2700
-	// Lead  : 1.6e10 0.44	11340
-	// Wood  : 1e10   0.40	480
-	
+    //==========================================================================
+    const double pi {M_PI};
+    /// real-time limit 3000 points approx.
+    const int maxGridSize {1500};
+    /// max Excitation duration in samples
+    const int maxExcDur = 130;
+    //==========================================================================
+    ///
+	OutputMethod outputType;
+    ///
+	InputMethod inputType;
+    ///
+	bool setupFlag;
+	//==========================================================================
+	double sampleRate;
+    //==========================================================================
 	double gauge;		// string gauge
 	double f0 ;			// frequency of note in Hz (see function at EOF)
-	
 	double E ;			// Young's modulus (Pa) (GPa = 1e9 Pa) of steel
 	double nu;			// Poisson Ratios (< .5)
 	double rho;			// density (kg/m^3) of steel
-	
 	double r ;			// string radius (m)
 	double L ;          // length (m)
 	double loss [4] ;	// loss [freq.(Hz), T60;...]
-	
-	double T;  // Tension in Newtons
-	
-	//////// // I/O string
+	double T;           // Tension in Newtons
+	//==========================================================================
 	double xi;		// coordinate of excitation (normalised, 0-1)
 	double xo;		// coordinate of readout (normalised, 0-1)
-
-	//////// // Excitation
+	//==========================================================================
 	double famp;	// peak amplitude of excitation (N)
 	double dur;		// duration of excitation (s)
 	double exc_st;	// start time of excitation (s)
 	double u0, v0;	// initial conditions
-	
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Derived Parameters
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//==========================================================================
 	double A, I, hmin, h, K, k, c, lambda, mu;
 	int N, li, lo;
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Allocate Memory
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	// Scheme States
-	double uDATA[maxGridSize], u1DATA[maxGridSize], u2DATA[maxGridSize];
-	double * u = uDATA, * u1 = u1DATA, * u2 = u2DATA;
+	//==========================================================================
+	/// Scheme States
+	double *u, *u1, *u2;
 	double *dummy_ptr;
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Loss coefficients
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//==========================================================================
+    /// Loss Coefficient
 	double sigma0 ,sigma1, z1, z2;
-	
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Scheme Coefficient
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	// coefficients are named based on position on the x and y axes.
-	double A00, B00, B01, B02, BC1, C00, C01;
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// Excitation Force
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	double dist, ind, rc, X, Y;
-	
+	//==========================================================================
+	/// Central Loss Coeffient A (INVERTED)
+    double A00;
+    /// Current time step (B) coeffients
+    double B00, B01, B02;
+    /// Boundary Coefficients
+    double BC1;
+    /// Previous time step (C) coeffients
+    double C00, C01;
+	//==========================================================================
+    /// force vector
+    double *force;
+    /// force index
+    int fi = 0;
 };
 
 #endif /* StringClass_hpp */

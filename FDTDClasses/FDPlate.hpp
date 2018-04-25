@@ -107,7 +107,7 @@ public: // Methods
      @param outType <#outType description#>
      @return <#return value description#>
      */
-    double getOutput (OutputMethod outType);
+    double getOutput();
     
     /**
      <#Description#>
@@ -193,7 +193,7 @@ public: // Variables
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Allocate Memory
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    /***/
+    /** Time State*/
     double * u, * u1, * u2;
     /***/
     double *dummyptr;

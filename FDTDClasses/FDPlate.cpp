@@ -9,6 +9,7 @@
 
 #include "FDPlate.hpp"
 
+//==============================================================================
 FDPlate::FDPlate()
 {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,6 +50,7 @@ FDPlate::FDPlate()
     
 };
 
+//==============================================================================
 
 void FDPlate::setup (double sampRate, BoundaryCondition bcType)
 {
@@ -332,10 +334,10 @@ void FDPlate::updateScheme()
 // Will need to implement interpolation, especially f this is meant to be a
 // free moving read-out.
 
-double FDPlate::getOutput (OutputMethod outType)
+double FDPlate::getOutput()
 {
     double sampleOut;
-    switch (outType)
+    switch (outputType)
     {
         case OutputMethod::velocity:
         {

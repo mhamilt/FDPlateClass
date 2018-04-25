@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstring>
 #include "../../FDTDClasses/FDPlate.cpp"
+#include "../../FDTDClasses/FDString.cpp"
 #include "../../AudioIOClasses/AudioOut.h"
 
 int main (int argc, const char *argv[])
@@ -19,7 +20,7 @@ int main (int argc, const char *argv[])
     // Sampling and Duration
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const double sampleRate = 44.1e3;
-    const double duration = 3;	 // duration (seconds)
+    const double duration = 7;	 // duration (seconds)
     
     //==========================================================================
     
@@ -55,13 +56,20 @@ int main (int argc, const char *argv[])
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Plate Setup
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    FDPlate plateTest;
-    plateTest.setup(sampleRate, FDPlate::BoundaryCondition::clamped);
-    plateTest.setInitialCondition();
+//    FDPlate plateTest;
+//    plateTest.setup(sampleRate, FDPlate::BoundaryCondition::clamped);
+//    plateTest.setInitialCondition();
+//    plateTest.setOutType(FDPlate::OutputMethod::velocity);
+//    //    Print info
+//    plateTest.printCoefs();
+//    plateTest.printInfo();
     
-    //	Print info
-    plateTest.printCoefs();
-    plateTest.printInfo();
+    FDString string;
+    string.setup(sampleRate, FDString::LossModel::frequencyDepenent, FDString::BoundaryCondition::simplySupported);
+    string.addForce();
+    string.printCoefs();
+    string.printInfo();
+    
     //==========================================================================
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Process Loop
@@ -69,12 +77,11 @@ int main (int argc, const char *argv[])
     // This is where the magic happens
     const double Nf = duration * sampleRate; // duration (samples)
     double *out = new double[Nf];
-    FDPlate::OutputMethod pickupType = FDPlate::OutputMethod::velocity;
     
     for(int n = 0; n < Nf; ++n)
     {
-        plateTest.updateScheme();
-        out[n] = plateTest.getOutput(pickupType);
+        string.updateScheme();
+        out[n] = string.getOutput();
     }
     
     //==========================================================================
