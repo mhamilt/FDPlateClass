@@ -40,7 +40,7 @@ FDString::FDString()
     xo = 0.23;        // coordinate of readout (normalised, 0-1)
     
     // // Excitation
-    famp = 1;        // peak amplitude of excitation (N)
+    famp = .1;        // peak amplitude of excitation (N)
     dur = 0.003;    // duration of excitation (s)
     exc_st = 0;        // start time of excitation (s)
     u0 = 0; v0 = 1;   // initial conditions
@@ -305,7 +305,7 @@ void FDString::addForce()
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Force
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    const double d0 = pow(k,2)/(h*rho*A*(1+k*sigma0))*A00;    // force coeffcient
+    const double d0 = famp*pow(k,2)/(h*rho*A*(1+k*sigma0))*A00;    // force coeffcient
     switch (inputType)
     {
         case InputMethod::strike:

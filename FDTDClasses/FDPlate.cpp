@@ -45,7 +45,7 @@ FDPlate::FDPlate()
     
     //Excitation
     ctr[0] = .35; ctr[1] = .45;    // centre point of excitation as percentage
-    wid = .25;                    // width (m)
+    wid = .25;                     // width (m)
     u0 = 0; v0 = 1;                // excitation displacement and velocity
     
 };
