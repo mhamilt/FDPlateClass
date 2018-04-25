@@ -19,7 +19,19 @@
 
 class FDPlate
 {
-public:
+public: // Class Enums
+    enum class BoundaryCondition
+    {
+        simplySupported,
+        clamped
+    };
+    
+    enum class OutputMethod
+    {
+        amplitude,
+        velocity
+    };
+public: // Methods
 	//==============================================================================
 	// Constructors/Assignments
 	//==============================================================================
@@ -44,9 +56,9 @@ public:
 	 setup the plate with a given sample rate and boundary condition type: still under construction
 
 	 @param sampRate Sample Rate in Hz
-	 @param bctype boundary condition type false: Simply Supported true: Clamped
+	 @param bctype boundary condition type FDPlate::BoundaryCondition
 	 */
-	void setup (double sampRate, bool bctype);
+	void setup (double sampRate, BoundaryCondition bctype);
     //==============================================================================
 	/**
 	 <#Description#>
@@ -67,20 +79,20 @@ public:
 	 @param xcoord <#xcoord description#>
 	 @param ycoord <#ycoord description#>
 	 */
-	void setOutput (double xcoord, double ycoord);
+	void setOutputPosition (double xcoord, double ycoord);
 	/**
 	 <#Description#>
 
 	 @param lxcoord <#lxcoord description#>
 	 @param lycoord <#lycoord description#>
 	 */
-	void setStereoOutput (double lxcoord, double lycoord);
+	void setStereoOutputPosition (double lxcoord, double lycoord);
 	/**
 	 <#Description#>
 
-	 @param outtype <#outtype description#>
+	 @param outType <#outtype description#>
 	 */
-	void setOutType (bool outtype);
+	void setOutType (OutputMethod outType);
 	/**
 	 <#Description#>
 
@@ -95,7 +107,7 @@ public:
      @param outType <#outType description#>
      @return <#return value description#>
      */
-    double getOutput (bool outType);
+    double getOutput (OutputMethod outType);
     
     /**
      <#Description#>
@@ -110,7 +122,7 @@ public:
      @param Left <#Left description#>
      @param Right <#Right description#>
      */
-    void getStereoOutput (bool outType, double &Left, double &Right);
+    void getStereoOutput (OutputMethod outType, double &Left, double &Right);
     /**
      <#Description#>
      
@@ -148,12 +160,12 @@ public:
 	 */
 	void printCoefs();
     //==============================================================================
-	/**
-	 <#Description#>
+    /**
+     Signum Function
 
-	 @param double <#double description#>
-	 @return <#return value description#>
-	 */
+     @param double input
+     @return returns 0 if d is `<` 0 or 1 if d is `>` 0
+     */
 	int sgn (double);
 	
 private: /// Methods
@@ -170,7 +182,7 @@ private: /// Methods
      
      @param bcType <#bcType description#>
      */
-    void setCoefs (bool bcType);
+    void setCoefs (BoundaryCondition bcType);
     /**
      <#Description#>
      */
@@ -230,9 +242,9 @@ private: // Variables
 	// Flags
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /***/
-	bool bcFlag;		// set boundary condition (s);
+	BoundaryCondition currentBoundCon;		// set boundary condition (s);
     /***/
-	bool outFlag;		// set output type 0: displacement, 1: velocity
+	OutputMethod outputType;		// set output type 0: displacement, 1: velocity
     /***/
 	bool setupFlag;		// flag if Setup() has been run
 	

@@ -10,25 +10,18 @@
 #include <iostream>
 #include <cstring>
 #include "../../FDTDClasses/FDPlate.cpp"
-#include "../../AudioClasses/AudioOut.h"	// For .wav header, write and playback
+#include "../../AudioIOClasses/AudioOut.h"
 
-int main (int argc, const char *argv[]) {
+int main (int argc, const char *argv[])
+{
     
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Sampling and Duration
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    const double sampleRate = 44.1e3;
+    const double duration = 3;	 // duration (seconds)
     
-    double SR, Tf;
-    int Nf;
-    
-    SR = 44.1e3; // Sample Rate
-    Tf = 3;	 // duration (seconds)
-    Nf = Tf *SR; // duration (samples)
-    
-    double *out;
-    out = new double[Nf];
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+    //==========================================================================
     
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Set Output File Name
@@ -58,41 +51,39 @@ int main (int argc, const char *argv[]) {
         strncpy(outputfname, argv[1], length);
     }
     
-    
+    //==========================================================================
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Plate Setup
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     FDPlate plateTest;
-    
-    //input is SR, and boundary condition type
-    plateTest.setup(SR,1);
+    plateTest.setup(sampleRate, FDPlate::BoundaryCondition::clamped);
     plateTest.setInitialCondition();
     
     //	Print info
     plateTest.printCoefs();
     plateTest.printInfo();
-    
+    //==========================================================================
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Process Loop
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // This is where the magic happens
+    const double Nf = duration * sampleRate; // duration (samples)
+    double *out = new double[Nf];
+    FDPlate::OutputMethod pickupType = FDPlate::OutputMethod::velocity;
     
     for(int n = 0; n < Nf; ++n)
     {
         plateTest.updateScheme();
-        out[n] = plateTest.getOutput(1);
+        out[n] = plateTest.getOutput(pickupType);
     }
     
-    
+    //==========================================================================
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Output
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    writeWavMS(out, outputfname, Nf, SR);
-    delete out;
+    writeWavMS(out, outputfname, Nf, sampleRate);
     playWavMS(outputfname);
     printf("\nComplete...\n");
-    
     std::cout << "SUCCESS" << '\n';
     return 0;
     

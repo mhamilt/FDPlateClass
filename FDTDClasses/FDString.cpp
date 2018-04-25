@@ -8,16 +8,6 @@
 
 #include "FDString.hpp"
 
-// Quick Signum Function
-int sgn(double d){
-	if(d<=0){
-		return 0;
-	}
-	else{
-		return 1;
-	}
-}
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // FDString Constructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

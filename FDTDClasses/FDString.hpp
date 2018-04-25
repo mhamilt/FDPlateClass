@@ -12,7 +12,8 @@
 #include <iostream>			// std::cout
 #include <cmath>
 
-class FDString {
+class FDString
+{
 	
 public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,8 +55,23 @@ public:
 	void setOutType(bool);			//DONE
 	void setForce();				//Under Construction
 	
-private:
+private: // functions
     
+    /**
+     Signum Function
+
+     @param d input
+     @return returns 0 if d is `<` 0 or 1 if d is `>` 0
+     */
+    int sgn(double d)
+    {
+        if(d<=0)
+            return 0;
+        else
+            return 1;
+    }
+
+  private:
     const double pi {3.14159265358979323846};
     static const int maxGridSize {1500};		// real-time limit 3000 points approx.
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

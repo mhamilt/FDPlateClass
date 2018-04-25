@@ -15,8 +15,8 @@ FDPlate::FDPlate()
     // Flags
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    bcFlag = 0;		// set boundary condition (s);
-    outFlag = 1;		// set output type 0: displacement, 1: velocity
+    currentBoundCon = BoundaryCondition::simplySupported;		// set boundary condition (s);
+    outputType = OutputMethod::velocity;		// set output type 0: displacement, 1: velocity
     setupFlag = false;	// flag if Setup() has been run
     
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,11 +33,6 @@ FDPlate::FDPlate()
     E = 11e9;						// Young's modulus
     rho = 480;						// density (kg/m^3)
     nu = .5;						// Poisson Ratios (< .5)
-    
-    //		E = 2e11;						// Young's modulus
-    //		rho = 8050;						// density (kg/m^3)
-    //		nu = .3;						// Poisson Ratios (< .5)
-    
     H = .006;						// thickness (m)
     Lx = 1;							// x-axis plate length (m)
     Ly = 1;							// y-axis plate length (m)
@@ -55,10 +50,8 @@ FDPlate::FDPlate()
 };
 
 
-void FDPlate::setup (double samprate, bool bctype)
+void FDPlate::setup (double samprate, BoundaryCondition bcType)
 {
-    
-    
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Motion Coefficients
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,7 +63,7 @@ void FDPlate::setup (double samprate, bool bctype)
     
     setLoss (8,.75);
     setGrid();
-    setCoefs (bctype);
+    setCoefs (bcType);
     
     //Set Input and Output Indeces
     li = (Ny*(ctr[1]*Nx)) + (ctr[0]*Ny);
@@ -78,7 +71,7 @@ void FDPlate::setup (double samprate, bool bctype)
     
     //	Update flags
     setupFlag = true;
-    bcFlag  = bctype;
+    currentBoundCon  = bcType;
     
     u = new double[ss];
     u1 = new double[ss];
@@ -87,7 +80,7 @@ void FDPlate::setup (double samprate, bool bctype)
     std::fill (u1, u1+ss, 0);
     std::fill (u2, u2+ss, 0);
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
 
 void FDPlate::setLoss (double lowT60, double highT60Percent)
 {
@@ -104,11 +97,11 @@ void FDPlate::setLoss (double lowT60, double highT60Percent)
     if (setupFlag)
     {
         setGrid();
-        setCoefs (bcFlag);
+        setCoefs (currentBoundCon);
     }
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
 
 void FDPlate::setGrid()
 {
@@ -136,16 +129,16 @@ void FDPlate::setGrid()
     ss = Nx*Ny;					// total grid size.
     
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
 
-void FDPlate::setCoefs (bool bcType = 0)
+void FDPlate::setCoefs (BoundaryCondition bcType)
 {
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Scheme Coefficients
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     //update flag
-    bcFlag = bcType;
+    currentBoundCon = bcType;
     
     // coefficients are named based on position on the x and y axes.
     A00 = 1/(1+k*sigma0); // Central Loss Coeffient (INVERTED)
@@ -157,15 +150,21 @@ void FDPlate::setCoefs (bool bcType = 0)
     B11 = (-pow (mu,2)*2) * A00;									  // diag
     B02 = (-pow (mu,2)*1) * A00;									  // 2-off
     
-    if (bcType)
-    { // Clamped Boundary Coefficients
-        BC1 = (-pow (mu,2)*21 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Side
-        BC2 = (-pow (mu,2)*22 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Corner
-    }
-    else
-    { // Simply Supported Boundary Coefficients
-        BC1 = (-pow (mu,2)*19 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Side
-        BC2 = (-pow (mu,2)*18 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Corner
+    switch (bcType)
+    {
+        case BoundaryCondition::clamped:
+        {
+            BC1 = (-pow (mu,2)*21 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Side
+            BC2 = (-pow (mu,2)*22 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Corner
+            break;
+        }
+        case BoundaryCondition::simplySupported:
+        default:
+        {
+            BC1 = (-pow (mu,2)*19 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Side
+            BC2 = (-pow (mu,2)*18 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // Corner
+            break;
+        }
     }
     
     //// Previous time step (C) coeffients
@@ -176,13 +175,7 @@ void FDPlate::setCoefs (bool bcType = 0)
     d0 = pow (k,2)/(rho*H*pow (h,2))*(1/(1+k*sigma0))*A00;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-
-
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Print Scheme Info
@@ -219,8 +212,8 @@ void FDPlate::printInfo()
     printf("Sigma 1         : %f\n", sigma1);
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
+//==============================================================================
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Update Plate State
@@ -332,44 +325,61 @@ void FDPlate::updateScheme()
     // swap pointers
     dummyptr = u2; u2 = u1; u1 = u; u = dummyptr;
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
+//==============================================================================
 
 // get the output from the plate based on the readout positino and type.
 // Will need to implement interpolation, especially f this is meant to be a
 // free moving read-out.
 
-double FDPlate::getOutput (bool outType)
+double FDPlate::getOutput (OutputMethod outType)
 {
-    if (outType)
+    double sampleOut;
+    switch (outType)
     {
-        return (u1[lo]- u2[lo])*SR; // Velocity out
+        case OutputMethod::velocity:
+        {
+            sampleOut = (u1[lo]- u2[lo])*SR; // Velocity out
+            break;
+        }
+        case OutputMethod::amplitude: // fall through to default
+        default:
+        {
+            sampleOut = u1[lo]; // Amplitude out
+            break;
+        }
     }
-    else
+    return sampleOut;
+}
+
+//==============================================================================
+
+
+void FDPlate::getStereoOutput (OutputMethod outType, double &leftOut, double &rightOut)
+{
+    switch (outType)
     {
-        return u1[lo]; // Amplitude out
+        case OutputMethod::velocity:
+        {
+            leftOut  = (u1[lol]- u2[lol])*SR;
+            rightOut = (u1[lor]- u2[lor])*SR;
+            break;
+        }
+        case OutputMethod::amplitude:
+        default:
+        {
+            leftOut  = u1[lol];
+            rightOut = u1[lor];
+            break;
+        }
     }
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-void FDPlate::getStereoOutput (bool outType, double &Left, double &Right)
-{
-    if (outType){// Velocity out
-        Left = (u1[lol]- u2[lol])*SR;
-        Right = (u1[lor]- u2[lor])*SR;
-    }
-    else{
-        Left = u1[lol]; // Amplitude out
-        Right = u1[lor];
-    }
-}
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
+//==============================================================================
 // Set the readout position on the plate
 
-void FDPlate::setOutput (double xcoord, double ycoord)
+void FDPlate::setOutputPosition (double xcoord, double ycoord)
 {
     int readoutpos = floor((Ny*(xcoord*Nx)) +  (ycoord*Ny));
     
@@ -394,7 +404,7 @@ void FDPlate::setOutput (double xcoord, double ycoord)
     lo = readoutpos;
 }
 
-void FDPlate::setStereoOutput (double lxcoord, double lycoord)
+void FDPlate::setStereoOutputPosition (double lxcoord, double lycoord)
 {
     // For simplicity, this mirrors left and right output
     // down the middle of the y-axis
@@ -419,18 +429,18 @@ void FDPlate::setStereoOutput (double lxcoord, double lycoord)
     lor = (Ny*(rxcoord*Nx)) +  (rycoord*Ny);
     
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
+//==============================================================================
 // Method sets the output type, either velocity or, amplitude. Can probably be
 // intergrated into the get output method.
 
-void FDPlate::setOutType (bool outType)
+void FDPlate::setOutType (OutputMethod outType)
 {
-    outFlag = outType;  // set output to velocity amplitude
+    outputType = outType;  // set output to velocity amplitude
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\
+//==============================================================================
+//==============================================================================
 // Method will set the profile of the input force, for use in JUCE.
 // Currently not interpolated, will need to look into that.
 // Array values will them selves be multiplied by a rasied cosine/half-cosine
@@ -457,14 +467,15 @@ void FDPlate::setInitialCondition()
         }
     }
 }
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
+
 
 void FDPlate::addForce (double force)
 {
     u1[li] += d0* force;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
 
 void FDPlate::addStrike()
 {
@@ -477,7 +488,7 @@ void FDPlate::addStrike()
     // Need to work out in advance which indeces will actually be affected by a strike.
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
 
 double FDPlate::reverb (double force)
 {
@@ -487,7 +498,7 @@ double FDPlate::reverb (double force)
     return getInterpOut();
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
 
 double FDPlate::getInterpOut()
 {
@@ -541,7 +552,7 @@ double FDPlate::getInterpOut()
 //======================================================================
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
 
 //Split this so that it is arbitrary of coordinate, so input is xCoord*Nx
 
@@ -587,7 +598,7 @@ void FDPlate::setInterpOut (const double xCoord, const double yCoord)
 //	LINEAR INTERP (COMMENT OUT)
 //======================================================================
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
 
 double **FDPlate::getInterpLookTable()
 {
@@ -651,15 +662,11 @@ double **FDPlate::getInterpLookTable()
     return alphaTable;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//==============================================================================
 int FDPlate::sgn (double d)
 {
-    if (d<= 0)
-    {
+    if(d<=0)
         return 0;
-    }
     else
-    {
         return 1;
-    }
-};
+}
