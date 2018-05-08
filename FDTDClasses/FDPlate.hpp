@@ -20,6 +20,7 @@
 class FDPlate
 {
 public: // Class Enums
+    
     enum class BoundaryCondition
     {
         simplySupported,
@@ -31,14 +32,41 @@ public: // Class Enums
         amplitude,
         velocity
     };
+    
+    struct PlateParameters
+    {
+        /// Young's modulus
+        float youngs = 11e9;
+        /// density (kg/m^3)
+        float density = 480;
+        /// Poisson Ratios (< .5)
+        float poisson = .5;
+        /// thickness (m)
+        float thickness = .003;
+        /// x-axis plate length (m)
+        float lengthX = 1;
+        /// y-axis plate length (m)
+        float lengthY = 1;
+        /// T60 decay
+        float t60 = 5;
+        /// high frequency: percent of T60 (0 < tone < 1)
+        float tone = 0.9;
+        /// boundary condtions
+        BoundaryCondition bcType = BoundaryCondition::simplySupported;
+    };
 public: // Methods
 	//==============================================================================
 	// Constructors/Assignments
 	//==============================================================================
-    /** Constructor*/
+    /** Constructor: Initialise with sample rate and FDPlate::PlateParameter struct
+                     or with default settings specifying nothing or just the sample
+                     rate. The Plate can be re-set using the setup() method*/
+    FDPlate(double sampRate, PlateParameters plateParams);
+    FDPlate(double sampRate);
     FDPlate();
 	/** Destructor*/
-	~FDPlate(){};
+    ~FDPlate();
+    
 	
 	/// Copy Assignment
 	//	FDPlate& operator= (const FDPlate&);
@@ -56,9 +84,9 @@ public: // Methods
 	 setup the plate with a given sample rate and boundary condition type: still under construction
 
 	 @param sampRate Sample Rate in Hz
-	 @param bctype boundary condition type FDPlate::BoundaryCondition
+	 @param plateParams the PlateParameters struct which defines the specifications of the plate model
 	 */
-	void setup (double sampRate, BoundaryCondition bctype);
+	void setup (double sampRate, PlateParameters plateParams);
     //==============================================================================
 	/**
 	 <#Description#>
@@ -90,16 +118,14 @@ public: // Methods
 	/**
 	 <#Description#>
 
-	 @param outType <#outtype description#>
-	 */
-	void setOutType (OutputMethod outType);
-	/**
-	 <#Description#>
-
 	 @param xCoord <#xCoord description#>
 	 @param yCoord <#yCoord description#>
 	 */
 	void setInterpOut (const double xCoord, const double yCoord);
+    /**
+     sets which function the is used when getting output
+     */
+    void setOutputFunction(OutputMethod outType);
     //==============================================================================
     /**
      <#Description#>
@@ -108,13 +134,6 @@ public: // Methods
      @return <#return value description#>
      */
     double getOutput();
-    
-    /**
-     <#Description#>
-     
-     @return <#return value description#>
-     */
-    double getInterpOut();
     /**
      <#Description#>
      
@@ -163,26 +182,33 @@ public: // Methods
     /**
      Signum Function
 
-     @param double input
+     @param input value to operate on
      @return returns 0 if d is `<` 0 or 1 if d is `>` 0
      */
-	int sgn (double);
+	int sgn (double input);
 	
 private: /// Methods
     //==============================================================================
+    double getVelocityOutput();
+    double getAmplitudeOutput();
+    /**
+     <#Description#>
+     
+     @return <#return value description#>
+     */
+    double getInterpOut();
+    //==============================================================================
 	/**
-	 <#Description#>
-
-	 @return <#return value description#>
+	 Populates the internal interpolation lookup table.
 	 */
-	double** getInterpLookTable();
+	void setInterpLookTable();
     //==============================================================================
     /**
      <#Description#>
      
      @param bcType <#bcType description#>
      */
-    void setCoefs (BoundaryCondition bcType);
+    void setCoefs (BoundaryCondition bcType, double rho, double H);
     /**
      <#Description#>
      */
@@ -208,9 +234,9 @@ public: // Variables
 private: // Variables
     //==============================================================================
     /***/
-	static constexpr const int interpOrder = 4;
+	const int interpOrder = 4;
     /***/
-	static constexpr const int interpRes = 1000;
+	const int interpRes = 1000;
     /***/
 	int interpZeroIndex;
     /***/
@@ -228,15 +254,16 @@ private: // Variables
     /***/
 	int* yInterpIndeces = new int[interpOrder];
     /***/
-	double** interpLookTable = getInterpLookTable();
-	
+	double** interpLookTable;
+	/** Pointer to one of the sample output function*/
+    double (FDPlate::*outputFunction)();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Constants
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /***/
-	static constexpr double pi {3.14159265358979323846};
+	const double pi {3.14159265358979323846};
     /***/
-	static constexpr int maxgridsize {3000};		// real-time limit 3000 points approx.
+	const int maxgridsize {3000};		// real-time limit 3000 points approx.
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Flags
@@ -246,29 +273,17 @@ private: // Variables
     /***/
 	OutputMethod outputType;		// set output type 0: displacement, 1: velocity
     /***/
-	bool setupFlag;		// flag if Setup() has been run
+	bool setupFlag = false;		// flag if Setup() has been run
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Physical Parameters
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// // wood
-    /**Young's modulus*/
-	double E;
-    /**density (kg/m^3)*/
-	double rho;
-	
-    /**thickness (m)*/
-	double H;
     /**x-axis plate length (m)*/
-	double Lx;
+    double Lx;
     /**y-axis plate length (m)*/
-	double Ly;
-    /**loss [freq.(Hz), T60;...]*/
-	double loss[4];
-    /**Poisson Ratios (< .5)*/
-	double nu;
-    
-	// I/O Parameters
+    double Ly;
+
+    // I/O Parameters
     /**readout position as percentage.*/
 	double rp[4];
 	
@@ -280,13 +295,13 @@ private: // Variables
 	// Derived Parameters
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /***/
-	double D, kappa, hmin, h, mu, k, SR, readcoordx,readcoordy, readoutpos;
+	double kappa, hmin, h, mu, k, SR, readcoordx,readcoordy, readoutpos;
     
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Loss coefficients
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /***/
-	double sigma0 ,sigma1, z1, z2;
+	double sigma0 ,sigma1;
 	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Scheme Coefficient

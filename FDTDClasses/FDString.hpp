@@ -55,7 +55,7 @@ public:
 	// Move-Assignment
 	//	FDString& operator= (FDString&&);
 	//==========================================================================
-	void setup(double, LossModel, BoundaryCondition);
+	void setup(double, LossModel, BoundaryCondition);   
     //==========================================================================
     void printInfo();
     void printCoefs();
