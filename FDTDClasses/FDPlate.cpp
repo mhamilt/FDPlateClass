@@ -20,6 +20,13 @@ FDPlate::FDPlate(double sampleRate) :FDPlate(sampleRate, PlateParameters())
 
 FDPlate::FDPlate (double sampRate, PlateParameters plateParams)
 {
+    setup(sampRate, plateParams);
+}
+
+//==============================================================================
+
+void FDPlate::setup(double sampRate, FDPlate::PlateParameters plateParams)
+{
     // I/O Parameters
     rp[0] = .5; rp[1]=.4; rp[2] = .5; rp[3]= .5; // readout position as percentage.
     
@@ -37,13 +44,12 @@ FDPlate::FDPlate (double sampRate, PlateParameters plateParams)
     
     SR = sampRate;               // internal class sampling rate
     k = 1/SR;                    // time step
-
+    
     Lx = plateParams.lengthX;
     Ly = plateParams.lengthY;
     
     setLoss (plateParams.t60,plateParams.tone);
-
-    setGrid();
+    setGridSpacing();
     setCoefs (plateParams.bcType, rho, H);
     
     //Set Input and Output Indeces
@@ -51,7 +57,6 @@ FDPlate::FDPlate (double sampRate, PlateParameters plateParams)
     lo = (Ny*(rp[1]*Nx)) +  (rp[0]*Ny);
     
     //    Update flags
-    setupFlag = true;
     currentBoundCon  = plateParams.bcType;
     
     u = new double[ss];
@@ -64,13 +69,6 @@ FDPlate::FDPlate (double sampRate, PlateParameters plateParams)
     setInterpLookTable();
     setInterpOut (rp[0], rp[1]);
     setOutputFunction(OutputMethod::velocity);
-}
-
-//==============================================================================
-
-void FDPlate::setup(double sampRate, FDPlate::PlateParameters plateParams)
-{
-    FDPlate(sampRate, plateParams);
 }
 //==============================================================================
 
@@ -95,8 +93,8 @@ void FDPlate::setLoss (double t60, double tone)
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Loss coefficients
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//    if (tone < 0.1)
-//        tone = 0.1;
+    if (tone < 0.1)
+        tone = 0.1;
     
     const double lowFrequencyBand  = 100;
     const double highFrequencyBand = 1000;
@@ -109,12 +107,8 @@ void FDPlate::setLoss (double t60, double tone)
 
 //==============================================================================
 
-void FDPlate::setGrid()
+void FDPlate::setGridSpacing()
 {
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Scheme Spacing
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    const int maxXgrid = 30.;
     // stability condition
     const double stabilityCondition = (sqrt (4*k*(sigma1+sqrt (pow (sigma1,2)+pow (kappa,2)))));
     
@@ -139,10 +133,6 @@ void FDPlate::setGrid()
 
 void FDPlate::setCoefs (BoundaryCondition bcType, double rho, double H)
 {
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Scheme Coefficients
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
     //update flag
     currentBoundCon = bcType;
     
@@ -173,7 +163,7 @@ void FDPlate::setCoefs (BoundaryCondition bcType, double rho, double H)
         }
     }
     
-    //// Previous time step (C) coeffients
+    // Previous time step (C) coeffients
     C00 = (-(2*sigma1*k/pow (h,2))*-4 - (1-sigma0*k))  * A00;
     C01 = -(2*sigma1*k/pow (h,2))  * A00;
     
@@ -204,7 +194,7 @@ void FDPlate::printCoefs()
 void FDPlate::printInfo()
 {
     printf("--- Scheme Info --- \n\n");
-    printf("Size            : %.1f m2 \n", Nx*h*Ny*h);
+    printf("Actual Size     : %.1f m2 \n", Nx*h*Ny*h);
 //    printf("Thickness (mm)  : %.0f mm \n", H*1e3);
     printf("Grid X-Ax       : %d \n", Nx);
     printf("Grid Y-Ax       : %d \n", Ny);
@@ -219,14 +209,6 @@ void FDPlate::printInfo()
 }
 
 //==============================================================================
-//==============================================================================
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Update Plate State
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-// TODO: update should not be run before Setup()
-// Do a check to ensure
 
 void FDPlate::updateScheme()
 {
@@ -333,6 +315,7 @@ void FDPlate::updateScheme()
         C00*u2[cp] +
         C01*( u2[cp-1] + u2[cp+1] + u2[cp-Ny] + u2[cp+Ny] );
     }
+    
     // swap pointers
     dummyptr = u2; u2 = u1; u1 = u; u = dummyptr;
 }
@@ -365,7 +348,7 @@ double FDPlate::getInterpOut()
             // out of bound test to mark point as zero
             if (yInterpIndeces[yi] < 0 || yInterpIndeces[yi] > Ny || xInterpIndeces[xi] < 0 || xInterpIndeces[xi] > Nx)
             {
-                //                hiResValue += 0;
+                // hiResValue += 0;
             }
             else
             {
@@ -377,30 +360,8 @@ double FDPlate::getInterpOut()
     }
     return interpOut;
 }
-//==============================================================================
-
-void FDPlate::getStereoOutput (OutputMethod outType, double &leftOut, double &rightOut)
-{
-    switch (outType)
-    {
-        case OutputMethod::velocity:
-        {
-            leftOut  = (u1[lol]- u2[lol])*SR;
-            rightOut = (u1[lor]- u2[lor])*SR;
-            break;
-        }
-        case OutputMethod::amplitude:
-        default:
-        {
-            leftOut  = u1[lol];
-            rightOut = u1[lor];
-            break;
-        }
-    }
-}
 
 //==============================================================================
-
 // Set the readout position on the plate
 
 void FDPlate::setOutputPosition (double xcoord, double ycoord)
@@ -428,31 +389,6 @@ void FDPlate::setOutputPosition (double xcoord, double ycoord)
     lo = readoutpos;
 }
 
-void FDPlate::setStereoOutputPosition (double lxcoord, double lycoord)
-{
-    // For simplicity, this mirrors left and right output
-    // down the middle of the y-axis
-    double rxcoord = lxcoord; double rycoord = 1-lycoord;
-    
-    //TODO: CHECK IF ON A VALID GRID POINT
-    if((lxcoord*Nx)-1 < 1 || (lxcoord*Nx)-1 > Nx-2){
-        //Do something to ensure it is not on a zero point
-    }
-    if((rxcoord*Nx)-1 < 1 || (rxcoord*Nx)-1 > Nx-2){
-        //Do something to ensure it is not on a zero point
-    }
-    if((lycoord*Ny)-1 < 1 || (lycoord*Ny)-1 > Nx-2){
-        //Do something to ensure it is not on a zero point
-    }
-    
-    if((rycoord*Ny)-1 < 1 || (rycoord*Ny)-1 > Nx-2){
-        //Do something to ensure it is not on a zero point
-    }
-    
-    lol = (Ny*(lxcoord*Nx)) +  (lycoord*Ny);
-    lor = (Ny*(rxcoord*Nx)) +  (rycoord*Ny);
-    
-}
 
 //==============================================================================
 // Method sets the output type, either velocity or, amplitude. Can probably be
@@ -460,7 +396,6 @@ void FDPlate::setStereoOutputPosition (double lxcoord, double lycoord)
 
 void FDPlate::setOutputFunction (OutputMethod outType)
 {
-//    outputType = outType;  // set output to velocity amplitude
     switch (outType)
     {
         case OutputMethod::velocity:
@@ -531,7 +466,6 @@ double FDPlate::reverb (double force)
 {
     updateScheme();
     addForce (force);
-    //    return getOutput (true);
     return getInterpOut();
 }
 
@@ -564,7 +498,6 @@ void FDPlate::setInterpLookTable()
 {
     const int order = interpOrder;
     const int res = interpRes;
-//    double **alphaTable = new double*[order];
     interpLookTable = new double*[order];
     for (int i = 0;i < order;++i)
     {
@@ -619,7 +552,6 @@ void FDPlate::setInterpLookTable()
     delete[] polynomialnormaliser;
     delete[] alphas;
     delete[] anchors;
-//    interpLookTable = alphaTable;
 }
 
 //==============================================================================
