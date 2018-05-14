@@ -23,7 +23,7 @@ int main (int argc, const char *argv[])
     // Sampling and Duration
     
     const double sampleRate = 44.1e3;
-    const double duration = 4;	 // duration (seconds)
+    const double duration = 4;	     // duration (seconds)
     
     //==========================================================================
     // Set Output File Name
@@ -33,31 +33,28 @@ int main (int argc, const char *argv[])
     
     //==========================================================================
     // Plate Setup
-    
     FDPlate::PlateParameters plateParams;
-    plateParams.thickness = 0.003;
+    plateParams.t60 = .3;
+    plateParams.thickness = 0.001;
     plateParams.tone = .5;
-    plateParams.lengthX = .6;
-    plateParams.lengthY = .4;
+    plateParams.lengthX = .2;
+    plateParams.lengthY = .2;
+    plateParams.bcType = FDPlate::BoundaryCondition::simplySupported;
+    
     FDPlate plate(sampleRate, plateParams);
-    
-//    plate.setup(sampleRate, plateParams);
-    
     plate.setInitialCondition();
-//    plate.setOutputFunction(FDPlate::OutputMethod::amplitude);
-    
     plate.printCoefs();
     plate.printInfo();
     
-//    FDString string;
-//    string.setup(sampleRate, FDString::LossModel::frequencyDepenent, FDString::BoundaryCondition::simplySupported);
-//    string.addForce();
-//    string.printCoefs();
-//    string.printInfo();
+    FDString string;
+    string.setup(sampleRate, FDString::LossModel::frequencyDepenent, FDString::BoundaryCondition::simplySupported);
+    string.addForce();
+    string.printCoefs();
+    string.printInfo();
     
     //==========================================================================
     // Process Loop
-
+    
     // This is where the magic happens
     const double Nf = duration * sampleRate; // duration (samples)
     double *out = new double[Nf];
@@ -70,7 +67,6 @@ int main (int argc, const char *argv[])
     
     //==========================================================================
     // Output
-    
     writeWavMS(out, outputfname, Nf, sampleRate);
     playWavMS(outputfname);
     printf("\nComplete...\n");

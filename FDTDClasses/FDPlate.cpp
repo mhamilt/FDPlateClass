@@ -6,6 +6,8 @@
 //  Copyright © 2017 mhamilt. All rights reserved.
 //
 //  Class file for a FDTD Plate
+//
+//
 
 #include "FDPlate.hpp"
 
@@ -39,8 +41,8 @@ void FDPlate::setup(double sampRate, FDPlate::PlateParameters plateParams)
     const double H   = plateParams.thickness;
     const double nu  = plateParams.poisson;
     const double rho = plateParams.density;
-    const double D = (E*(pow (H, 3)))/(12*(1-pow (nu,2)));
-    kappa = sqrt (D / (rho*  H) );
+    const double D = (E * pow (H, 3) )/(12 * (1 - pow (nu,2)));
+    kappa = sqrt (D / (rho *  H) );
     
     SR = sampRate;               // internal class sampling rate
     k = 1/SR;                    // time step
@@ -74,14 +76,14 @@ void FDPlate::setup(double sampRate, FDPlate::PlateParameters plateParams)
 
 FDPlate::~FDPlate()
 {
-    delete[] u;
-    delete[] u1;
-    delete[] u2;
+    delete [] u;
+    delete [] u1;
+    delete [] u2;
     delete [] xInterpIndeces;
     delete [] yInterpIndeces;
     
     for (int i = 0; i < interpOrder; ++i)
-        delete[] interpLookTable[i];
+        delete [] interpLookTable[i];
     
     delete [] interpLookTable;
 }
@@ -90,11 +92,7 @@ FDPlate::~FDPlate()
 
 void FDPlate::setLoss (double t60, double tone)
 {
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Loss coefficients
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (tone < 0.1)
-        tone = 0.1;
+    tone = range(tone, 0.01, 0.99);
     
     const double lowFrequencyBand  = 100;
     const double highFrequencyBand = 1000;
@@ -142,9 +140,9 @@ void FDPlate::setCoefs (BoundaryCondition bcType, double rho, double H)
     //// Current time step (B) coeffients
     // There are six unique coefficients for B coefs
     B00 = (-pow (mu,2)*20 + (2*sigma1*k/pow (h,2))*-4 + 2) * A00; // center
-    B01 = (-pow (mu,2)*-8 + (2*sigma1*k/pow (h,2))) * A00;          // 1-off
-    B11 = (-pow (mu,2)*2) * A00;                                      // diag
-    B02 = (-pow (mu,2)*1) * A00;                                      // 2-off
+    B01 = (-pow (mu,2)*-8 + (2*sigma1*k/pow (h,2))) * A00;        // 1-off
+    B11 = (-pow (mu,2)*2) * A00;                                  // diag
+    B02 = (-pow (mu,2)*1) * A00;                                  // 2-off
     
     switch (bcType)
     {
@@ -195,7 +193,7 @@ void FDPlate::printInfo()
 {
     printf("--- Scheme Info --- \n\n");
     printf("Actual Size     : %.1f m2 \n", Nx*h*Ny*h);
-//    printf("Thickness (mm)  : %.0f mm \n", H*1e3);
+    //    printf("Thickness (mm)  : %.0f mm \n", H*1e3);
     printf("Grid X-Ax       : %d \n", Nx);
     printf("Grid Y-Ax       : %d \n", Ny);
     printf("Total Ps        : %d \n", ss);
@@ -203,7 +201,7 @@ void FDPlate::printInfo()
     printf("Outcell         : %d\n", lo);
     printf("TimeStep        : %.2e\n", k);
     printf("SampRate        : %.2e\n", SR);
-//    printf("Youngs          : %.2e\n", E);
+    //    printf("Youngs          : %.2e\n", E);
     printf("Sigma 0         : %f\n", sigma0);
     printf("Sigma 1         : %f\n", sigma1);
 }
@@ -466,7 +464,7 @@ double FDPlate::reverb (double force)
 {
     updateScheme();
     addForce (force);
-    return getInterpOut();
+    return getOutput();
 }
 
 //==============================================================================
@@ -562,3 +560,57 @@ int FDPlate::sgn (double d)
     else
         return 1;
 }
+
+//==============================================================================
+
+double FDPlate::range(double value, double min, double max)
+{
+    if (min > max) // check values are not switched
+    {
+        const double temp = min;
+        min = max;
+        max = temp;
+    }
+    
+    if (value < min)
+        value = min;
+    if (value > max)
+        value = max;
+    
+    return value;
+}
+
+float FDPlate::range(float value, float min, float max)
+{
+    if (min > max) // check values are not switched
+    {
+        const float temp = min;
+        min = max;
+        max = temp;
+    }
+    
+    if (value < min)
+        value = min;
+    if (value > max)
+        value = max;
+    
+    return value;
+}
+
+int FDPlate::range(int value, int min, int max)
+{
+    if (min > max) // check values are not switched
+    {
+        const int temp = min;
+        min = max;
+        max = temp;
+    }
+    
+    if (value < min)
+        value = min;
+    if (value > max)
+        value = max;
+    
+    return value;
+}
+//==============================================================================

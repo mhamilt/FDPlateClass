@@ -35,23 +35,23 @@ public: // Class Enums
     
     struct PlateParameters
     {
-        /// Young's modulus
-        float youngs = 11e9;
-        /// density (kg/m^3)
-        float density = 480;
-        /// Poisson Ratios (< .5)
-        float poisson = .5;
-        /// thickness (m)
-        float thickness = .003;
-        /// x-axis plate length (m)
-        float lengthX = 1;
-        /// y-axis plate length (m)
-        float lengthY = 1;
-        /// T60 decay
-        float t60 = 5;
-        /// high frequency: percent of T60 (0 < tone < 1)
-        float tone = 0.9;
-        /// boundary condtions
+        /** Young's modulus*/
+        double youngs = 11e9;
+        /** density (kg/m^3)*/
+        double density = 480;
+        /** Poisson Ratios (< .5)*/
+        double poisson = .5;
+        /** thickness (m)*/
+        double thickness = .003;
+        /** x-axis plate length (m)*/
+        double lengthX = 1;
+        /** y-axis plate length (m)*/
+        double lengthY = 1;
+        /** T60 decay*/
+        double t60 = 5;
+        /** high frequency: percent of T60 (0 < tone < 1)*/
+        double tone = 0.9;
+        /** boundary condtions*/
         BoundaryCondition bcType = BoundaryCondition::simplySupported;
     };
 public: // Methods
@@ -143,6 +143,33 @@ public: // Methods
      */
     int sgn (double input);
     
+    /**
+     constrain a value to a particular range
+
+     @param value value to test
+     @param min minimum value
+     @param max maximum value
+     @return value contstrained to limits
+     */
+    double range (double value, double min, double max);
+    /**
+     constrain a value to a particular range
+     
+     @param value value to test
+     @param min minimum value
+     @param max maximum value
+     @return value contstrained to limits
+     */
+    float  range (float  value, float  min, float  max);
+    /**
+     constrain a value to a particular range
+     
+     @param value value to test
+     @param min minimum value
+     @param max maximum value
+     @return value contstrained to limits
+     */
+    int    range (int    value, int    min, int    max);
 private: /// Methods
     //==========================================================================
     /**
@@ -215,17 +242,11 @@ private: // Variables
     /***/
     const int interpRes = 1000;
     /***/
-    int interpZeroIndex;
-    /***/
     double interpPointY, interpAlphaY;
     /***/
     double interpPointX, interpAlphaX;
     /***/
-    double linearAlphas[4];
-    /***/
     int xAlphaIndex, yAlphaIndex;
-    /***/
-    int  linearInterpInds[4];
     /***/
     int* xInterpIndeces = new int[interpOrder];
     /***/
@@ -240,7 +261,7 @@ private: // Variables
     /***/
     const double pi {3.14159265358979323846};
     /***/
-    const int maxgridsize {3000};		// real-time limit 3000 points approx.
+    const int maxGridSize {3000};		// real-time limit 3000 points approx.
     /***/
     const int maxXgrid = 30.;
     //==========================================================================
@@ -273,6 +294,5 @@ private: // Variables
     /**Derived Parameters*/
     double kappa, hmin, h, mu, k, SR, readcoordx,readcoordy, readoutpos;
 };
-
 
 #endif /* PlateClasshpp */

@@ -56,13 +56,15 @@ FDString::FDString()
     K = sqrt(E*I/(rho*A));   // stiffness constant
     sampleRate = 44.1e3;
     k = 1/sampleRate;
-    
 }
 
 //==============================================================================
 FDString::~FDString()
 {
-    
+    delete [] u;
+    delete [] u1;
+    delete [] u2;
+    delete [] force;
 }
 
 //==============================================================================
@@ -288,13 +290,13 @@ void FDString::setInitialCondition()
 
 void FDString::setMemory()
 {
-    u =  new double[maxGridSize];
-    std::fill(u, u+maxGridSize, 0);
-    u1 = new double[maxGridSize];
-    std::fill(u1, u+maxGridSize, 0);
-    u2 = new double[maxGridSize];
-    std::fill(u2, u+maxGridSize, 0);
+    u =  new double[N];
+    u1 = new double[N];
+    u2 = new double[N];
     force = new double[maxExcDur];
+    std::fill(u,  u+N,  0);
+    std::fill(u1, u1+N, 0);
+    std::fill(u2, u2+N, 0);
     std::fill(force, force+maxExcDur, 0);
 }
 
@@ -338,7 +340,6 @@ void FDString::updateForce()
 {
     u[li] += force[fi];
     force[fi] = 0;
-//    ++fi;
-//    fi %= maxExcDur;
+//    ++fi; fi %= maxExcDur;
     fi = (fi + 1 == maxExcDur ? 0: fi + 1);
 }

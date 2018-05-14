@@ -38,6 +38,27 @@ public: // Enum Classes
         simple,
         frequencyDepenent
     };
+    struct StringParameters
+    {
+        /** Young's modulus*/
+        double youngs = 11e9;
+        /** density (kg/m^3)*/
+        double density = 480;
+        /** Poisson Ratios (< .5)*/
+        double poisson = .5;
+        /** gauge (inch e-3)*/
+        double gauge = 10;
+        /** x-axis plate length (m)*/
+        double lengthX = 1;
+        /** y-axis plate length (m)*/
+        double lengthY = 1;
+        /** T60 decay*/
+        double t60 = 5;
+        /** high frequency: percent of T60 (0 < tone < 1)*/
+        double tone = 0.9;
+        /** boundary condtions*/
+        BoundaryCondition bcType = BoundaryCondition::simplySupported;
+    };
 public:
 	//==========================================================================
 	//Contructor
@@ -114,7 +135,7 @@ private: // functions
     //==========================================================================
     const double pi {M_PI};
     /// real-time limit 3000 points approx.
-    const int maxGridSize {1500};
+    const int maxGridSize {150};
     /// max Excitation duration in samples
     const int maxExcDur = 130;
     //==========================================================================
