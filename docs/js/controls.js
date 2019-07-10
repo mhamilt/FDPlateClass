@@ -9,7 +9,8 @@ function setValue(input, element_id)
     case 'amp':
       forceAmp = input.value;
       break;
-    case 'value':
+    case 'freq':
+      setForce(input.value)
       break;
     case "display_mode":
       display_3d = input.checked;

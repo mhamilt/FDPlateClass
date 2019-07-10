@@ -9,6 +9,7 @@ plate.setup(44.1e3);
 //------------------------------------------------------------------------------
 // Display
 let display_3d = false;
+let frameSkip = 10;
 //------------------------------------------------------------------------------
 // Input
 let input_sine = true;
@@ -64,7 +65,7 @@ function windowResized()
 function drawPlate()
 {
   //----------------------------------------------------------------------------
-  for (var i = 0; i < 10; ++i)
+  for (var i = 0; i < frameSkip; ++i)
   {
     if (input_sine)
     {
@@ -167,5 +168,6 @@ function mouseDragged()
 //------------------------------------------------------------------------------
 function setForce(freq)
 {
+  frameSkip = (freq > 500) ? 1 : 10
   radpersec = TAU * freq / plate.coef.SR
 }

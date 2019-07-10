@@ -21,6 +21,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="css/style.css">
     <link rel="stylesheet" type="text/css" href="css/controls.css">
+    <!-- <script>
+      var fullscreenMode = true;
+      window.addEventListener('touchmove', function() {})
+      document.ontouchmove = function(e)
+      {
+        e.preventDefault();
+      }
+
+      document.addEventListener('touchmove', function()
+      {
+        e.preventDefault();
+      },
+      {
+        passive: false
+      });
+    </script> -->
+    <!-- <style>
+      body {
+        overflow: hidden;
+        -webkit-overflow-scrolling: unset;
+      }
+    </style> -->
   </head>
 
   <body>
@@ -51,25 +73,37 @@
           <div class=" row">
             <div class="slidecontainer">
               <h2>
-                Sine Amp: <span id="rangeValue"></span>
+                Sine Amp: <span id="ampValue"></span>
               </h2>
-              <input type="range" min="1" max="200" value="1" class="slider" id="amp" oninput="setValue(this, 'rangeValue')"></input>
+              <input type="range" min="1" max="200" value="1" class="slider" id="amp" oninput="setValue(this, 'ampValue')"></input>
             </div>
           </div>
-
+          <br>
+          <div class=" row">
+            <div class="slidecontainer">
+              <h2>
+                Sine Hz: <span id="freqValue"></span>
+              </h2>
+              <input type="range" min="20" max="1000" value="1" class="slider" id="freq" oninput="setValue(this, 'freqValue')"></input>
+            </div>
+          </div>
           <br>
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-3">
               <label class="checkcontainer">Input
                 <input type="checkbox" id="input_mode" onchange="setValue(this)" checked="checked"></input>
                 <span class="checkmark"></span>
               </label>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label class="checkcontainer">3D
                 <input type="checkbox" id="display_mode" onchange="setValue(this)">
                 <span class="checkmark"></span>
               </label>
+            </div>
+            <div class="col-md-3">
             </div>
           </div>
           <br>
@@ -84,6 +118,32 @@
       </div>
       <script src="js/controls.js">
         // document.getElementById("input_mode").checked = true
+      </script>
+      <script>
+        var canvas_dom = document.getElementById('sketch-holder'); // make this your canvas DOM element
+        canvas_dom.addEventListener("touchstart", function(event)
+        {
+          event.preventDefault()
+        })
+        canvas_dom.addEventListener("touchmove", function(event)
+        {
+          event.preventDefault()
+        })
+        canvas_dom.addEventListener("touchend", function(event)
+        {
+          event.preventDefault()
+        })
+        canvas_dom.addEventListener("touchcancel", function(event)
+        {
+          event.preventDefault()
+        })
+
+        var fixed = document.getElementById('sketch-holder');
+
+        fixed.addEventListener('sketch-holder', function(e)
+        {
+          e.preventDefault();
+        }, false);
       </script>
     </div>
 
