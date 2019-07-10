@@ -107,6 +107,32 @@
       <script src="js/controls.js">
         // document.getElementById("input_mode").checked = true
       </script>
+      <script>
+        var canvas_dom = document.getElementById('sketch-holder'); // make this your canvas DOM element
+        canvas_dom.addEventListener("touchstart", function(event)
+        {
+          event.preventDefault()
+        })
+        canvas_dom.addEventListener("touchmove", function(event)
+        {
+          event.preventDefault()
+        })
+        canvas_dom.addEventListener("touchend", function(event)
+        {
+          event.preventDefault()
+        })
+        canvas_dom.addEventListener("touchcancel", function(event)
+        {
+          event.preventDefault()
+        })
+
+        var fixed = document.getElementById('sketch-holder');
+
+        fixed.addEventListener('sketch-holder', function(e)
+        {
+          e.preventDefault();
+        }, false);
+      </script>
     </div>
 
   </body>
