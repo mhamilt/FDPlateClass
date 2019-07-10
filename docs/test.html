@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <!-- META -->
+    <meta charset="UTF-8">
+    <meta name="description" content="finite difference scheme">
+    <meta name="keywords" content="HTML,CSS,P5js,JavaScript,fdtd,finite difference">
+    <meta name="author" content="Matthew Hamilton">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDPlate</title>
+    <script src="js/FD_Plate.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+
+  <body>
+    <script>
+      a = new FDPlate();
+      a.setup(44100);
+      a.updateScheme();
+      console.log(a.param.youngs)
+    </script>
+  </body>
+
+</html>

@@ -1,0 +1,25 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+p {
+    color: black;
+}
+
+.sketch {
+    /*max-width: 100%;*/
+    padding-right: 20px;
+    padding-bottom: 20px;
+    vertical-align: middle;
+}
+
+.container {
+    margin-top: 5%
+}
+
+canvas {
+    display: block;
+}
+

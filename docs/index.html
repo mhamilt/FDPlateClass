@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <!-- META -->
+    <meta charset="UTF-8">
+    <meta name="description" content="finite difference scheme">
+    <meta name="keywords" content="HTML,CSS,P5js,JavaScript,fdtd,finite difference">
+    <meta name="author" content="Matthew Hamilton">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDPlate</title>
+    <!-- SCRIPT -->
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.sound.min.js"></script>
+    <script src="js/fd-plate.js"></script>
+    <script src="js/FD_Plate.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/controls.css">
+  </head>
+
+  <body>
+    <nav class="navbar navbar-dark navbar-full bg-inverse" style="">
+      <a class="navbar-brand" href="#">FDPlate</a>
+      <ul class="nav navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mhamilt/processing-tone-matrix">GitHub</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="container">
+      <div id="jumbo-canvas" class="jumbotron">
+        <h1>
+          Finite Difference Plate
+        </h1>
+        <p class="lead">
+          A finite difference plate. See the GitHub repository for more info.
+        </p>
+        <h2>
+          Equation of Motion
+        </h2>
+        <p>
+          <span style="font-size:0.9em; line-height:0%">$$\ddot{u} = -\kappa^{2}\Delta\Delta u, \quad \kappa = \sqrt{\frac{E H^2}{12\rho(1- \nu)} }$$</span>
+        </p>
+        <hr />
+        <div class="container">
+          <div class=" row">
+            <div class="slidecontainer">
+              <h2>
+                Sine Amp: <span id="rangeValue"></span>
+              </h2>
+              <input type="range" min="1" max="200" value="1" class="slider" id="amp" oninput="setValue(this, 'rangeValue')"></input>
+            </div>
+          </div>
+
+          <br>
+          <div class="row">
+            <div class="col-md-6">
+              <label class="checkcontainer">Input
+                <input type="checkbox" id="input_mode" onchange="setValue(this)" checked="checked"></input>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="col-md-6">
+              <label class="checkcontainer">3D
+                <input type="checkbox" id="display_mode" onchange="setValue(this)">
+                <span class="checkmark"></span>
+              </label>
+            </div>
+          </div>
+          <br>
+          <div class=" row">
+            <div class="col-md-12" id="sketch-holder" align="center">
+              <!-- Our sketch will go here! -->
+            </div>
+          </div>
+        </div>
+        <script src="js/sketch.js">
+        </script>
+      </div>
+      <script src="js/controls.js">
+        // document.getElementById("input_mode").checked = true
+      </script>
+    </div>
+
+  </body>
+
+</html>
