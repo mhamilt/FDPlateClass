@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.5/css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="css/style.css">
     <link rel="stylesheet" type="text/css" href="css/controls.css">
-    <script>
+    <!-- <script>
       var fullscreenMode = true;
       window.addEventListener('touchmove', function() {})
       document.ontouchmove = function(e)
@@ -36,13 +36,13 @@
       {
         passive: false
       });
-    </script>
-    <style>
+    </script> -->
+    <!-- <style>
       body {
         overflow: hidden;
         -webkit-overflow-scrolling: unset;
       }
-    </style>
+    </style> -->
   </head>
 
   <body>
@@ -81,17 +81,21 @@
 
           <br>
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-3">
               <label class="checkcontainer">Input
                 <input type="checkbox" id="input_mode" onchange="setValue(this)" checked="checked"></input>
                 <span class="checkmark"></span>
               </label>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label class="checkcontainer">3D
                 <input type="checkbox" id="display_mode" onchange="setValue(this)">
                 <span class="checkmark"></span>
               </label>
+            </div>
+            <div class="col-md-3">
             </div>
           </div>
           <br>
