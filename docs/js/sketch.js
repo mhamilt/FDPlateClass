@@ -131,7 +131,15 @@ function mousePressed()
   )
   {
     input_rect_timer = millis();
-    var point = constrain(Math.floor(((plate.coef.Ny - 1) * mouseX / height)), 1, plate.coef.Ny - 2) + plate.coef.Ny
+    // var point = constrain(Math.floor(((plate.coef.Nx - 1) * mouseX / height)), 1, plate.coef.Ny - 2) + plate.coef.Ny
+
+    let point = {
+      x: constrain(Math.floor((plate.coef.Nx - 1) * mouseX / width), 1, plate.coef.Nx - 1),
+      y: constrain(Math.floor((plate.coef.Ny - 1) * mouseY / height), 1, plate.coef.Ny - 1)
+    }
+    plate.coef.li = point.x + (point.y * (plate.coef.Ny));
+    console.log(point);
+
     var c = [
       mouseY / height,
       mouseX / width
@@ -157,12 +165,15 @@ function mouseDragged()
   )
   {
     input_rect_timer = millis();
-    var point = constrain(Math.floor(((plate.coef.Ny - 1) * mouseX / height)), 1, plate.coef.Ny - 2) + plate.coef.Ny
+    let point = {
+      x: Math.floor(((plate.coef.Nx - 1) * mouseX / width)),
+      y: Math.floor(((plate.coef.Ny - 1) * mouseY / height))
+    }
     forceIn = {
       x: mouseX,
       y: mouseY
     }
-    plate.coef.li = point;
+    plate.coef.li = point.x + (point.y * (plate.coef.Ny));
   }
 }
 //------------------------------------------------------------------------------
