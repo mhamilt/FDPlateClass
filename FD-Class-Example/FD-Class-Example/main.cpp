@@ -9,9 +9,9 @@
 
 #include <iostream>
 #include <string>
-#include "../../FDTDClasses/FDPlate.cpp"
-#include "../../FDTDClasses/FDString.cpp"
-#include "../../cpp-cli-audio-tools/src/CliAudioTools.h"
+#include "../../FDTDClasses/FDPlate.hpp"
+#include "../../FDTDClasses/FDString.hpp"
+#include "../../cpp-cli-audio-tools/src/MattsAudioTools.h"
 #include "../../CliFileNaming/CliFileName.h"
 
 //==============================================================================
@@ -36,10 +36,10 @@ int main (int argc, const char *argv[])
     // Plate Setup
     FDPlate::PlateParameters plateParams;
     plateParams.t60 = 10.3;
-    plateParams.thickness = 0.001;
+    plateParams.thickness = 0.0005;
     plateParams.tone = .9;
-    plateParams.lengthX = .2;
-    plateParams.lengthY = .2;
+    plateParams.lengthX = .1;
+    plateParams.lengthY = .1;
     plateParams.bcType = FDPlate::BoundaryCondition::simplySupported;
     
     FDPlate plate(sampleRate, plateParams);
@@ -47,25 +47,28 @@ int main (int argc, const char *argv[])
     plate.printCoefs();
     plate.printInfo();
     
-    FDString string;
-    string.setup(sampleRate, FDString::LossModel::frequencyDepenent, FDString::BoundaryCondition::simplySupported);
-    string.addForce();
-    string.printCoefs();
-    string.printInfo();
+//    FDString string;
+//    string.setup(sampleRate, FDString::LossModel::frequencyDepenent, FDString::BoundaryCondition::simplySupported);
+//    string.addForce();
+//    string.printCoefs();
+//    string.printInfo();
     
     //==========================================================================
     // Process Loop
     
     // This is where the magic happens
     const double Nf = duration * sampleRate; // duration (samples)
-    double *out = new double[Nf];
+    float *out = new float[Nf];
     
     for(int n = 0; n < Nf; ++n)
     {
-        plate.updateScheme();
-        out[n] = plate.getOutput();
+        plate++;
+        plate >> out[n];
     }
-    
+    plate.printMap();
+    AudioPlayerOpenAL ap;
+    WavCodec::normaliseBuffer(out, Nf);
+//    ap.playAudioData(out, Nf, 1, sampleRate, 16);
     //==========================================================================
     // Output
     wavCodec.writeWavMS(out, outputfname, Nf, sampleRate);
@@ -73,4 +76,5 @@ int main (int argc, const char *argv[])
     std::cout << "SUCCESS" << '\n';
     return EXIT_SUCCESS;
 }
+
 

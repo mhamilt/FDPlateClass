@@ -36,21 +36,21 @@ public: // Class Enums
     struct PlateParameters
     {
         /** Young's modulus*/
-        double youngs = 11e9;
+        float youngs = 11e9;
         /** density (kg/m^3)*/
-        double density = 480;
+        float density = 480;
         /** Poisson Ratios (< .5)*/
-        double poisson = .5;
+        float poisson = .5;
         /** thickness (m)*/
-        double thickness = .003;
+        float thickness = .003;
         /** x-axis plate length (m)*/
-        double lengthX = 1;
+        float lengthX = 1;
         /** y-axis plate length (m)*/
-        double lengthY = 1;
+        float lengthY = 1;
         /** T60 decay*/
-        double t60 = 5;
+        float t60 = 5;
         /** high frequency: percent of T60 (0 < tone < 1)*/
-        double tone = 0.9;
+        float tone = 0.9;
         /** boundary condtions*/
         BoundaryCondition bcType = BoundaryCondition::simplySupported;
     };
@@ -61,12 +61,15 @@ public: // Methods
     /** Constructor: Initialise with sample rate and FDPlate::PlateParameter struct
      or with default settings specifying nothing or just the sample
      rate. The Plate can be re-set using the setup() method*/
-    FDPlate(double sampRate, PlateParameters plateParams);
-    FDPlate(double sampRate);
+    FDPlate(float sampRate, PlateParameters plateParams);
+    FDPlate(float sampRate);
     FDPlate();
     /** Destructor*/
     ~FDPlate();
     
+    void operator++(int);
+    void operator<<(float input);
+    void operator>>(float& output);
     //==========================================================================
     // Methods
     //==========================================================================
@@ -83,14 +86,14 @@ public: // Methods
      @param xcoord x-axis co-ordinate
      @param ycoord y-axis co-ordinate
      */
-    void setOutputPosition (double xcoord, double ycoord);
+    void setOutputPosition (float xcoord, float ycoord);
     /**
      set the read-out position for interpolated output
      
      @param xCoord x-axis co-ordinate
      @param yCoord y-axis co-ordinate
      */
-    void setInterpOut (const double xCoord, const double yCoord);
+    void setInterpOut (const float xCoord, const float yCoord);
     /**
      sets which function the is used when getting output
      */
@@ -101,7 +104,7 @@ public: // Methods
      
      @return returns value of which ever function outputFunction points to
      */
-    double getOutput();
+    float getOutput();
     
     /**
      Process an audio signal using the scheme as a plate reverb unit
@@ -109,18 +112,20 @@ public: // Methods
      @param force the audio signal
      @return output from the plate at the desired point
      */
-    double reverb (double force);
+    float reverb (float force);
     //==========================================================================
     /**
      Update the time state of the scheme
      */
     void updateScheme();
+    void updateRefactor();
+    void originalUpdate();
     /**
      add force to the relevant section of the plate
      
      @param force force in Newtons
      */
-    void addForce (double force);
+    void addForce (float force);
     /**
      UNDER CONSTRUCTION: will add a strike force to the plate.
      */
@@ -134,6 +139,10 @@ public: // Methods
      Print Internal Coefficients
      */
     void printCoefs();
+    /**
+     print layout of coefs for debugging
+     */
+    void printMap();
     //==========================================================================
     /**
      Signum Function
@@ -141,7 +150,7 @@ public: // Methods
      @param input value to operate on
      @return returns 0 if d is `<` 0 or 1 if d is `>` 0
      */
-    int sgn (double input);
+    int sgn (float input);
     
     /**
      constrain a value to a particular range
@@ -151,7 +160,7 @@ public: // Methods
      @param max maximum value
      @return value contstrained to limits
      */
-    double range (double value, double min, double max);
+    float range (float value, float min, float max);
     /**
      constrain a value to a particular range
      
@@ -160,7 +169,7 @@ public: // Methods
      @param max maximum value
      @return value contstrained to limits
      */
-    float  range (float  value, float  min, float  max);
+//    float  range (float  value, float  min, float  max);
     /**
      constrain a value to a particular range
      
@@ -178,26 +187,26 @@ private: /// Methods
      @param sampRate Sample Rate in Hz
      @param plateParams the PlateParameters struct which defines the specifications of the plate model
      */
-    void setup (double sampRate, PlateParameters plateParams);
+    void setup (float sampRate, PlateParameters plateParams);
     //==========================================================================
     /**
      get the velocity output from the plate. Rounding to the nearest grid point
      
      @return velocity at specified read-out point
      */
-    double getVelocityOutput();
+    float getVelocityOutput();
     /**
      Gets the amplitude output from the plate. Rounding to the nearest grid point
      
      @return amplitude at specified read-out point
      */
-    double getAmplitudeOutput();
+    float getAmplitudeOutput();
     /**
      Use the internal interpolation method to calculate the output from the plate
      
      @return interpolated value at specified read-out point
      */
-    double getInterpOut();
+    float getInterpOut();
     //==========================================================================
     /**
      Populates the internal interpolation lookup table.
@@ -211,7 +220,7 @@ private: /// Methods
      @param tone percentage of high frequency decay relative to T60, between .1 and 1.
      Values outside this range will be capped
      */
-    void setLoss (double t60, double tone);
+    void setLoss (float t60, float tone);
     /**
      Sets the coeffiecients for the scheme
      
@@ -219,32 +228,44 @@ private: /// Methods
      @param rho plate material density
      @param H plate thickness
      */
-    void setCoefs (BoundaryCondition bcType, double rho, double H);
+    void setCoefs (BoundaryCondition bcType, float rho, float H);
     /**
      Sets the grid spacing for the scheme
      */
     void setGridSpacing();
-    
+protected:
+    /**
+     <#Description#>
+     */
+    void updateCenter();
+    /**
+     <#Description#>
+     */
+    void updateSides();
+    /**
+     <#Description#>
+     */
+    void updateCorners();
 public: // Variables
     //==========================================================================
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Allocate Memory
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /** Time State*/
-    double * u, * u1, * u2;
+    float * u, * u1, * u2;
     /***/
-    double *dummyptr;
+    float *dummyptr;
     
-private: // Variables
+protected: // Variables
     //==========================================================================
     /***/
     const int interpOrder = 4;
     /***/
     const int interpRes = 1000;
     /***/
-    double interpPointY, interpAlphaY;
+    float interpPointY, interpAlphaY;
     /***/
-    double interpPointX, interpAlphaX;
+    float interpPointX, interpAlphaX;
     /***/
     int xAlphaIndex, yAlphaIndex;
     /***/
@@ -252,14 +273,14 @@ private: // Variables
     /***/
     int* yInterpIndeces = new int[interpOrder];
     /***/
-    double** interpLookTable;
+    float** interpLookTable;
     /** Pointer to one of the sample output function*/
-    double (FDPlate::*outputFunction)();
+    float (FDPlate::*outputFunction)();
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Constants
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /***/
-    const double pi {3.14159265358979323846};
+    const float pi {3.14159265358979323846};
     /***/
     const int maxGridSize {3000};		// real-time limit 3000 points approx.
     /***/
@@ -274,25 +295,26 @@ private: // Variables
     // Physical Parameters
     
     /**x-axis plate length (m)*/
-    double Lx;
+    float Lx;
     /**y-axis plate length (m)*/
-    double Ly;
+    float Ly;
     /**readout position as percentage.*/
-    double rp[4];
+    float rp[4];
     /**Excitation*/
-    double u0, v0, wid, ctr[2]; // excitation displacement and velocity
+    float u0, v0, wid, ctr[2]; // excitation displacement and velocity
     
     //==========================================================================
     /**Loss coefficients*/
-    double sigma0 ,sigma1;
+    float sigma0 ,sigma1;
     //==========================================================================
     /**Scheme Coefficient*/
-    double A00, B00, B01, B11, B02, BC1, BC2, C00, C01, d0;
+    float A00, B00, B01, B11, B02, BC1, BC2, C00, C01, d0;
     //==========================================================================
     /**Derived Parameters*/
-    int Nx, Ny, ss, li, lo, lol, lor;
+    int Nx, Ny, li, lo, lol, lor;
+    int ss;
     /**Derived Parameters*/
-    double kappa, hmin, h, mu, k, SR, readcoordx,readcoordy, readoutpos;
+    float kappa, hmin, h, mu, k, SR, readcoordx,readcoordy, readoutpos;
 };
 
 #endif /* PlateClasshpp */
