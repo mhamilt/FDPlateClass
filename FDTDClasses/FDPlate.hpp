@@ -179,7 +179,6 @@ public: // Methods
      @return value contstrained to limits
      */
     int    range (int    value, int    min, int    max);
-private: /// Methods
     //==========================================================================
     /**
      setup the plate with a given sample rate and boundary condition type: still under construction
@@ -188,6 +187,7 @@ private: /// Methods
      @param plateParams the PlateParameters struct which defines the specifications of the plate model
      */
     void setup (float sampRate, PlateParameters plateParams);
+private: /// Methods
     //==========================================================================
     /**
      get the velocity output from the plate. Rounding to the nearest grid point
@@ -282,9 +282,9 @@ protected: // Variables
     /***/
     const float pi {3.14159265358979323846};
     /***/
-    const int maxGridSize {3000};		// real-time limit 3000 points approx.
+    const int maxGridSize {30000};		// real-time limit 3000 points approx.
     /***/
-    const int maxXgrid = 30.;
+    const int maxXgrid = 300.;
     //==========================================================================
     /***/
     BoundaryCondition currentBoundCon;
@@ -308,6 +308,7 @@ protected: // Variables
     float sigma0 ,sigma1;
     //==========================================================================
     /**Scheme Coefficient*/
+protected:
     float A00, B00, B01, B11, B02, BC1, BC2, C00, C01, d0;
     //==========================================================================
     /**Derived Parameters*/

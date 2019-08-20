@@ -36,10 +36,10 @@ int main (int argc, const char *argv[])
     // Plate Setup
     FDPlate::PlateParameters plateParams;
     plateParams.t60 = 10.3;
-    plateParams.thickness = 0.0005;
+    plateParams.thickness = 0.001;
     plateParams.tone = .9;
-    plateParams.lengthX = .1;
-    plateParams.lengthY = .1;
+    plateParams.lengthX = .2;
+    plateParams.lengthY = .2;
     plateParams.bcType = FDPlate::BoundaryCondition::simplySupported;
     
     FDPlate plate(sampleRate, plateParams);
@@ -65,10 +65,10 @@ int main (int argc, const char *argv[])
         plate++;
         plate >> out[n];
     }
-    plate.printMap();
+//    plate.printMap();
     AudioPlayerOpenAL ap;
     WavCodec::normaliseBuffer(out, Nf);
-//    ap.playAudioData(out, Nf, 1, sampleRate, 16);
+    ap.playAudioData(out, Nf, 1, sampleRate, 16);
     //==========================================================================
     // Output
     wavCodec.writeWavMS(out, outputfname, Nf, sampleRate);

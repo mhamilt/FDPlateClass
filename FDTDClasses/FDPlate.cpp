@@ -256,10 +256,7 @@ void FDPlate::printMap()
 
 void FDPlate::updateScheme()
 {
-    //    updateCenter();
     updateRefactor();
-//    updateSides();
-//    updateCorners();
     dummyptr = u2; u2 = u1; u1 = u; u = dummyptr; // swap pointers
 }
 
@@ -708,12 +705,12 @@ void FDPlate::updateRefactor()
             }
             else if ((cp > Ny &&
                       cp < (Ny*(Nx-1)) &&
-                      (cp % Ny) > 1 &&
-                      (cp % Ny) < (Ny-2)) ||
+                      cpm > 1 &&
+                      cpm < (Ny-2)) ||
                      (cp > (2*Ny) &&
                       cp < (Ny*(Nx-2)) &&
-                      ((cp % Ny) == 1 ||
-                       (cp % Ny) == Nx-2)))
+                      (cpm == 1 ||
+                       cpm == Nx-2)))
             {    
                 u[cp]  = BC1*u1[cp] +
                 B01 * ( u1[cp - 1] + u1[cp + 1] + u1[cp - Ny] + u1[cp + Ny]) +
