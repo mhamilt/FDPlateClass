@@ -28,7 +28,7 @@ private:
     
 private:
     /// queue that can send work to the GPU in our system.
-    dispatch_queue_t queue;
+    dispatch_queue_t queue = nullptr;
 };
 
 #endif /* OclPlate_hpp */
