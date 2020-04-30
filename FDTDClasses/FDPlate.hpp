@@ -235,15 +235,15 @@ private: /// Methods
     void setGridSpacing();
 protected:
     /**
-     <#Description#>
+        update the centre of the plate (i.e. no boundary conditions)
      */
     void updateCenter();
     /**
-     <#Description#>
+     update the plate sides with a single boundary condition
      */
     void updateSides();
     /**
-     <#Description#>
+      update plate corner (i.e. 2 boundary conditions)
      */
     void updateCorners();
 public: // Variables
@@ -282,7 +282,7 @@ protected: // Variables
     /***/
     const float pi {3.14159265358979323846};
     /***/
-    const int maxGridSize {30000};		// real-time limit 3000 points approx.
+    const int maxGridSize {3000};		// real-time limit 3000 points approx.
     /***/
     const int maxXgrid = 300.;
     //==========================================================================
@@ -302,7 +302,6 @@ protected: // Variables
     float rp[4];
     /**Excitation*/
     float u0, v0, wid, ctr[2]; // excitation displacement and velocity
-    
     //==========================================================================
     /**Loss coefficients*/
     float sigma0 ,sigma1;
