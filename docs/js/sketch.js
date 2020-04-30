@@ -69,7 +69,7 @@ function drawPlate()
   {
     if (input_sine)
     {
-      plate.addForce(sin(cur_rad) * forceAmp)
+      plate.addForce((sin(cur_rad) + 1) * forceAmp * 0.5)
       cur_rad += radpersec;
     }
     plate.updateScheme();
