@@ -8,7 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		58784B3F2280315600D7B9A8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58784B3E2280315600D7B9A8 /* main.cpp */; };
-		58784B462280326F00D7B9A8 /* WavCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58784B452280326F00D7B9A8 /* WavCodec.cpp */; };
+		58A69E3A2307071F00E8D96C /* FDString.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58A69E372307071E00E8D96C /* FDString.cpp */; };
+		58A69E3B2307071F00E8D96C /* FDPlate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58A69E392307071E00E8D96C /* FDPlate.cpp */; };
+		58A69E5423070B3E00E8D96C /* WavCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58A69E5323070B3E00E8D96C /* WavCodec.cpp */; };
+		58A69E5623070B5B00E8D96C /* AudioPlayerOpenAL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 58A69E5523070B5B00E8D96C /* AudioPlayerOpenAL.cpp */; };
+		58A69E5923070B7B00E8D96C /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58A69E5823070B7B00E8D96C /* OpenAL.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,7 +30,13 @@
 /* Begin PBXFileReference section */
 		58784B3B2280315600D7B9A8 /* FD-Class-Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "FD-Class-Example"; sourceTree = BUILT_PRODUCTS_DIR; };
 		58784B3E2280315600D7B9A8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		58784B452280326F00D7B9A8 /* WavCodec.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WavCodec.cpp; path = "../cpp-cli-audio-tools/src/WavCodec.cpp"; sourceTree = "<group>"; };
+		58A69E362307071E00E8D96C /* FDPlate.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FDPlate.hpp; sourceTree = "<group>"; };
+		58A69E372307071E00E8D96C /* FDString.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FDString.cpp; sourceTree = "<group>"; };
+		58A69E382307071E00E8D96C /* FDString.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FDString.hpp; sourceTree = "<group>"; };
+		58A69E392307071E00E8D96C /* FDPlate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FDPlate.cpp; sourceTree = "<group>"; };
+		58A69E5323070B3E00E8D96C /* WavCodec.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = WavCodec.cpp; path = "../cpp-cli-audio-tools/src/WavCodec.cpp"; sourceTree = "<group>"; };
+		58A69E5523070B5B00E8D96C /* AudioPlayerOpenAL.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AudioPlayerOpenAL.cpp; path = "../cpp-cli-audio-tools/src/AudioPlayerOpenAL.cpp"; sourceTree = "<group>"; };
+		58A69E5823070B7B00E8D96C /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				58A69E5923070B7B00E8D96C /* OpenAL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,9 +54,12 @@
 		58784B322280315500D7B9A8 = {
 			isa = PBXGroup;
 			children = (
-				58784B452280326F00D7B9A8 /* WavCodec.cpp */,
+				58A69E5523070B5B00E8D96C /* AudioPlayerOpenAL.cpp */,
+				58A69E5323070B3E00E8D96C /* WavCodec.cpp */,
+				58A69E352307071E00E8D96C /* FDTDClasses */,
 				58784B3D2280315600D7B9A8 /* FD-Class-Example */,
 				58784B3C2280315600D7B9A8 /* Products */,
+				58A69E5723070B7B00E8D96C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -63,6 +77,26 @@
 				58784B3E2280315600D7B9A8 /* main.cpp */,
 			);
 			path = "FD-Class-Example";
+			sourceTree = "<group>";
+		};
+		58A69E352307071E00E8D96C /* FDTDClasses */ = {
+			isa = PBXGroup;
+			children = (
+				58A69E362307071E00E8D96C /* FDPlate.hpp */,
+				58A69E392307071E00E8D96C /* FDPlate.cpp */,
+				58A69E372307071E00E8D96C /* FDString.cpp */,
+				58A69E382307071E00E8D96C /* FDString.hpp */,
+			);
+			name = FDTDClasses;
+			path = ../FDTDClasses;
+			sourceTree = "<group>";
+		};
+		58A69E5723070B7B00E8D96C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				58A69E5823070B7B00E8D96C /* OpenAL.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -122,7 +156,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				58784B462280326F00D7B9A8 /* WavCodec.cpp in Sources */,
+				58A69E5623070B5B00E8D96C /* AudioPlayerOpenAL.cpp in Sources */,
+				58A69E5423070B3E00E8D96C /* WavCodec.cpp in Sources */,
+				58A69E3B2307071F00E8D96C /* FDPlate.cpp in Sources */,
+				58A69E3A2307071F00E8D96C /* FDString.cpp in Sources */,
 				58784B3F2280315600D7B9A8 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
