@@ -3,6 +3,10 @@
 <JUCERPROJECT id="IV7fbR" name="FDPlateReverbPlugin" projectType="audioplug"
               jucerVersion="5.4.7" pluginFormats="buildAU,buildAUv3,buildStandalone,buildVST3">
   <MAINGROUP id="zJyK2m" name="FDPlateReverbPlugin">
+    <GROUP id="{EB681EA9-52C8-B1E1-5F84-43EBAF0AB99D}" name="FDClasses">
+      <FILE id="CrlmRP" name="FDPlate.cpp" compile="1" resource="0" file="../FDTDClasses/FDPlate.cpp"/>
+      <FILE id="zUuyJR" name="FDPlate.hpp" compile="0" resource="0" file="../FDTDClasses/FDPlate.hpp"/>
+    </GROUP>
     <GROUP id="{71BAEEFC-D0C3-8DD1-38BC-5CE7AB1E9999}" name="Source">
       <FILE id="pwvduv" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
