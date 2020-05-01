@@ -21,9 +21,24 @@ FdplateReverbPluginAudioProcessor::FdplateReverbPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
 #endif
+parameters(*this, nullptr, "ParamTreeExample",
 {
+    std::make_unique<AudioParameterFloat>("gain", "Gain", NormalisableRange<float> (0.0f, 1.0f), 0.5f)
+})
+{
+//    addParameter (gain = new AudioParameterFloat ("gain", // parameter ID
+//                                                  "Gain", // parameter name
+//                                                  0.0f,   // minimum value
+//                                                  1.0f,   // maximum value
+//                                                  0.5f)); // default value
+//    addParameter (gain = new AudioParameterFloat ("gain1",                                // parameter ID
+//                                                  "Gain",                                // parameter name
+//                                                  NormalisableRange<float> (0.0f, 1.0f), // parameter range
+//                                                  0.5f));                                // default value
+    gainParam = parameters.getRawParameterValue("gain");
+//    AudioProcessorValueTreeState
 }
 
 FdplateReverbPluginAudioProcessor::~FdplateReverbPluginAudioProcessor()
@@ -135,6 +150,7 @@ void FdplateReverbPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
+    
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -150,7 +166,11 @@ void FdplateReverbPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+//    buffer.applyGain(*gain);
+//    buffer.applyGain(*gainParam);
+    buffer.applyGain(*parameters.getRawParameterValue("gain"));
+    std::cout << *parameters.getRawParameterValue("gain") << '\n';
+        for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
 
@@ -172,15 +192,12 @@ AudioProcessorEditor* FdplateReverbPluginAudioProcessor::createEditor()
 //==============================================================================
 void FdplateReverbPluginAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+//     MemoryOutputStream (destData, true).writeFloat (*gain);
 }
 
 void FdplateReverbPluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+//    *gain = MemoryInputStream (data, static_cast<size_t> (sizeInBytes), false).readFloat();
 }
 
 //==============================================================================

@@ -54,8 +54,12 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
+public:
+    AudioProcessorValueTreeState parameters;
 private:
-    //==============================================================================
+//==============================================================================
+    AudioParameterFloat* gain;
+    std::atomic<float>* gainParam;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FdplateReverbPluginAudioProcessor)
 };
