@@ -29,10 +29,10 @@ FdplateReverbPluginAudioProcessorEditor::FdplateReverbPluginAudioProcessorEditor
  
     // this function adds the slider to the editor
     addAndMakeVisible (&gainSlider);
-    
-    gainSlideAttach = new AudioProcessorValueTreeState::SliderAttachment(processor.parameters,
-                                                                        "gain",
-                                                                         gainSlider);
+     
+    gainSlideAttach = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.parameters,
+                                                                                       "gain",
+                                                                                       gainSlider);
 }
 
 FdplateReverbPluginAudioProcessorEditor::~FdplateReverbPluginAudioProcessorEditor()

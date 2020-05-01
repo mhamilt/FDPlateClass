@@ -31,7 +31,6 @@ private:
     // access the processor object that created it.
     Slider gainSlider;
     FdplateReverbPluginAudioProcessor& processor;
-    ScopedPointer<AudioProcessorValueTreeState::SliderAttachment> gainSlideAttach;
-//    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment>gainSlideAttach;
+    std::unique_ptr<AudioProcessorValueTreeState::SliderAttachment>gainSlideAttach;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FdplateReverbPluginAudioProcessorEditor)
 };
