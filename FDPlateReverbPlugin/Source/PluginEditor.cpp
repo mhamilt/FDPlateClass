@@ -32,7 +32,7 @@ FdplateReverbPluginAudioProcessorEditor::FdplateReverbPluginAudioProcessorEditor
     addAndMakeVisible (&gainSlider);
      
     gainSlideAttach = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.parameters,
-                                                                                       "gain",
+                                                                                       "wetdry",
                                                                                        gainSlider);
 }
 

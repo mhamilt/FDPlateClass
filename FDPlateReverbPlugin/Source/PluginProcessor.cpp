@@ -25,10 +25,10 @@ FdplateReverbPluginAudioProcessor::FdplateReverbPluginAudioProcessor()
 #endif
 parameters(*this, nullptr, "ParamTreeExample",
 {
-    std::make_unique<AudioParameterFloat>("gain", "Gain", NormalisableRange<float> (0.0f, 1.0f), 0.5f)
+    std::make_unique<AudioParameterFloat>("wetdry", "Wetdry", NormalisableRange<float> (0.0f, 0.5f), 0.5f)
 })
 {
-    gainParam = parameters.getRawParameterValue("gain");
+    gainParam = parameters.getRawParameterValue("wetdry");
 }
 
 FdplateReverbPluginAudioProcessor::~FdplateReverbPluginAudioProcessor()
@@ -139,18 +139,19 @@ void FdplateReverbPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    const float magicNumber = 600.00;
+    const float magicNumber = 400.00;
     
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
-    buffer.applyGain(*parameters.getRawParameterValue("gain"));
+    
+    float  wet = cos(*parameters.getRawParameterValue("wetdry") * MathConstants<float>::pi);
+    float  dry = sin(*parameters.getRawParameterValue("wetdry") * MathConstants<float>::pi);
     
     auto* outputData = buffer.getWritePointer (0);
     for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
-        outputData[i] = (0.707 * buffer.getReadPointer (0)[i])
-        + (0.707 * (plateReverb.reverb(buffer.getReadPointer (0)[i]) * magicNumber));
+        outputData[i] = (wet * buffer.getReadPointer (0)[i])
+        + (dry * (plateReverb.reverb(buffer.getReadPointer (0)[i]) * magicNumber));
     }
     for (int channel = 1; channel < totalNumInputChannels; ++channel)
     {
