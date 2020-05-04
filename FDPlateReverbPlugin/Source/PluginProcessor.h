@@ -61,5 +61,6 @@ private:
     AudioParameterFloat* gain;
     std::atomic<float>* gainParam;
     
+    FDPlate plateReverb;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FdplateReverbPluginAudioProcessor)
 };

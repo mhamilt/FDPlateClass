@@ -252,11 +252,18 @@ void FDPlate::printMap()
     }
 }
 
+void FDPlate::printMaxAmp()
+{
+    std::cout << maxRecordAmp << std::endl;
+}
 //==============================================================================
 
 void FDPlate::updateScheme()
 {
-    updateRefactor();
+    originalUpdate();
+//    updateCenter();
+//    updateSides();
+//    updateCorners();
     dummyptr = u2; u2 = u1; u1 = u; u = dummyptr; // swap pointers
 }
 
@@ -367,7 +374,7 @@ void FDPlate::originalUpdate()
     }
     
     // swap pointers
-    dummyptr = u2; u2 = u1; u1 = u; u = dummyptr;
+//    dummyptr = u2; u2 = u1; u1 = u; u = dummyptr;
 }
 //==============================================================================
 
@@ -679,6 +686,8 @@ void FDPlate::updateCenter()
             B11 * ( u1[cp - 1 - Ny] + u1[cp + 1 - Ny] + u1[cp + 1 + Ny] + u1[cp - 1 + Ny] ) +
             C00 * u2[cp] +
             C01 * ( u2[cp - 1] + u2[cp + 1] + u2[cp - Ny] + u2[cp + Ny] );
+            
+           
         }
     }
 }

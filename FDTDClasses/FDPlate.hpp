@@ -42,13 +42,13 @@ public: // Class Enums
         /** Poisson Ratios (< .5)*/
         float poisson = .5;
         /** thickness (m)*/
-        float thickness = .003;
+        float thickness = .006;
         /** x-axis plate length (m)*/
         float lengthX = 1;
         /** y-axis plate length (m)*/
         float lengthY = 1;
         /** T60 decay*/
-        float t60 = 5;
+        float t60 = 7.50;
         /** high frequency: percent of T60 (0 < tone < 1)*/
         float tone = 0.9;
         /** boundary condtions*/
@@ -187,6 +187,10 @@ public: // Methods
      @param plateParams the PlateParameters struct which defines the specifications of the plate model
      */
     void setup (float sampRate, PlateParameters plateParams);
+    /**
+        print the maximum aplitude achieved on the plate
+     */
+    void printMaxAmp();
 private: /// Methods
     //==========================================================================
     /**
@@ -307,7 +311,7 @@ protected: // Variables
     float sigma0 ,sigma1;
     //==========================================================================
     /**Scheme Coefficient*/
-protected:
+private:
     float A00, B00, B01, B11, B02, BC1, BC2, C00, C01, d0;
     //==========================================================================
     /**Derived Parameters*/
@@ -315,6 +319,9 @@ protected:
     int ss;
     /**Derived Parameters*/
     float kappa, hmin, h, mu, k, SR, readcoordx,readcoordy, readoutpos;
+    /** Record amplitude
+     */
+    float maxRecordAmp = 0.0;
 };
 
 #endif /* PlateClasshpp */
