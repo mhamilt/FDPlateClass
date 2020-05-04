@@ -101,7 +101,7 @@ void FdplateReverbPluginAudioProcessor::changeProgramName (int index, const Stri
 void FdplateReverbPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     plateReverb.setup(sampleRate, FDPlate::PlateParameters());
-    plateReverb.printInfo();
+//    plateReverb.printInfo();
 }
 
 void FdplateReverbPluginAudioProcessor::releaseResources()
@@ -112,38 +112,18 @@ void FdplateReverbPluginAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool FdplateReverbPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    ignoreUnused (layouts);
     return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
-        return false;
-
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
-
-    return true;
-  #endif
 }
 #endif
 
 void FdplateReverbPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+//    auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     const float magicNumber = 400.00;
-    
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-    
+       
     float  wet = cos(*parameters.getRawParameterValue("wetdry") * MathConstants<float>::pi);
     float  dry = sin(*parameters.getRawParameterValue("wetdry") * MathConstants<float>::pi);
     
@@ -153,7 +133,7 @@ void FdplateReverbPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer
         outputData[i] = (wet * buffer.getReadPointer (0)[i])
         + (dry * (plateReverb.reverb(buffer.getReadPointer (0)[i]) * magicNumber));
     }
-    for (int channel = 1; channel < totalNumInputChannels; ++channel)
+    for (int channel = 1; channel < totalNumOutputChannels; ++channel)
     {
         buffer.copyFrom(channel,
                         0,
