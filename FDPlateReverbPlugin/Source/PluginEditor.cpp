@@ -20,7 +20,8 @@ FdplateReverbPluginAudioProcessorEditor::FdplateReverbPluginAudioProcessorEditor
     setSize (400, 300);    
  
     // these define the parameters of our slider object
-    gainSlider.setSliderStyle (Slider::LinearBarVertical);
+    gainSlider.setSliderStyle (Slider::SliderStyle::RotaryVerticalDrag);
+    
     gainSlider.setRange(0.0, 127.0, 1.0);
     gainSlider.setTextBoxStyle (Slider::NoTextBox, false, 90, 0);
     gainSlider.setPopupDisplayEnabled (false, false, this);
@@ -47,13 +48,18 @@ void FdplateReverbPluginAudioProcessorEditor::paint (Graphics& g)
 
     g.setColour (Colours::white);
     g.setFont (15.0f);
-    
+
     g.drawFittedText ("Plate Reverb!", getLocalBounds(), Justification::centred, 1);
 }
 
 void FdplateReverbPluginAudioProcessorEditor::resized()
 {
-    gainSlider.setBounds(40, 30, 30, getHeight() - 60);
+    int sliderDiam = ((getHeight() < getWidth()) ? getHeight() : getWidth()) / 2;
+    int sliderRadius = sliderDiam / 2 ;
+    gainSlider.setBounds(getWidth()/2 - sliderRadius,
+                         getHeight()/2 - sliderRadius,
+                         sliderDiam,
+                         sliderDiam);
 }
 
 

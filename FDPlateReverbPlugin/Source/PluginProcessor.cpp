@@ -28,17 +28,7 @@ parameters(*this, nullptr, "ParamTreeExample",
     std::make_unique<AudioParameterFloat>("gain", "Gain", NormalisableRange<float> (0.0f, 1.0f), 0.5f)
 })
 {
-//    addParameter (gain = new AudioParameterFloat ("gain", // parameter ID
-//                                                  "Gain", // parameter name
-//                                                  0.0f,   // minimum value
-//                                                  1.0f,   // maximum value
-//                                                  0.5f)); // default value
-//    addParameter (gain = new AudioParameterFloat ("gain1",                                // parameter ID
-//                                                  "Gain",                                // parameter name
-//                                                  NormalisableRange<float> (0.0f, 1.0f), // parameter range
-//                                                  0.5f));                                // default value
     gainParam = parameters.getRawParameterValue("gain");
-//    AudioProcessorValueTreeState
 }
 
 FdplateReverbPluginAudioProcessor::~FdplateReverbPluginAudioProcessor()
